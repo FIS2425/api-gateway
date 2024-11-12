@@ -1,0 +1,21 @@
+# Ignore node_modules
+node_modules
+
+# Environment file
+.env
+.env.local
+.env.dev
+.env.test
+.env.prod
+
+# Migrations
+migrations
+
+# Seeders
+seeders
+
+# Mac files
+.DS_Store
+
+# Logs
+logs

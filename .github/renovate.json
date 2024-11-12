@@ -1,0 +1,47 @@
+{
+  "timezone": "Europe/Madrid",
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "npm (development)"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies"],
+      "groupName": "npm (runtime)"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "separateMajorMinor": false,
+      "groupName": "ci"
+    },
+    {
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "groupName": "lockfiles",
+      "dependencyDashboardApproval": true
+    }
+  ],
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 0,
+  "prHourlyLimit": 0,
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "groupName": "vulnerable",
+    "labels": ["🔒 Security", "📦 Dependencies"]
+  },
+  "ignoreDeps": ["npm", "node"],
+  "enabledManagers": ["npm", "github-actions"],
+  "labels": ["📦 Dependencies"],
+  "rebaseWhen": "behind-base-branch",
+  "rangeStrategy": "pin",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "groupName": "lockfiles",
+    "schedule": ["every month"]
+  },
+  "assignees": ["alvarobernal2412"],
+  "reviewers": ["adrrf"],
+  "extends": ["mergeConfidence:age-confidence-badges"]
+}

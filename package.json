@@ -1,0 +1,58 @@
+{
+  "name": "template",
+  "version": "1.0.0",
+  "description": "Template repository for starting a microservice",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.9.0",
+    "yarn": "Yarn is not supported, please use npm",
+    "pnpm": "PNPM is not supported, please use npm"
+  },
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env ./src/config/index.js",
+    "lint": "eslint . --max-warnings=0 --cache --cache-location node_modules/.cache/eslint",
+    "lint-fix": "eslint . --fix --max-warnings=0 --cache --cache-location node_modules/.cache/eslint",
+    "dev": "node --watch --env-file=.env ./src/config/index.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "populate": "node ./populators/runPopulator.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FIS2425/template.git"
+  },
+  "keywords": [
+    "microservice",
+    "MERN"
+  ],
+  "author": "alvarobernal2412",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/FIS2425/template/issues"
+  },
+  "homepage": "https://github.com/FIS2425/template#readme",
+  "devDependencies": {
+    "@commitlint/cli": "19.5.0",
+    "@commitlint/config-conventional": "19.5.0",
+    "@eslint/js": "9.13.0",
+    "@stylistic/eslint-plugin-js": "2.10.0",
+    "eslint": "9.13.0",
+    "globals": "15.11.0",
+    "husky": "9.1.6",
+    "mongodb-memory-server": "10.1.2",
+    "supertest": "7.0.0",
+    "vitest": "2.1.4"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "2.8.5",
+    "express": "4.21.1",
+    "kafka-node": "5.0.0",
+    "mongoose": "8.7.3",
+    "swagger-ui-express": "5.0.1",
+    "winston": "3.16.0",
+    "yamljs": "0.3.0"
+  }
+}

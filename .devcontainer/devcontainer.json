@@ -1,0 +1,16 @@
+{
+  "name": "Base FIS Codespace",
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "installDockerComposeSwitch": false
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
+      "npm": "latest"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 8
+  }
+}

@@ -1,0 +1,47 @@
+🧪 Tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+
+📝 Documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+
+🐳 Build:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .dockerignore
+          - Dockerfile
+          - docker-compose.yml
+
+⚙️ Configuration:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .dockerignore
+          - .env.example
+          - .gitignore
+          - vitest.config.**.ts
+          - create-vitest-test-config.ts
+          - commitlint.config.ts
+
+📦 Dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json
+
+🚀 CI/CD:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - .github/renovate.json
+          - .github/pr-scope-labeler.yml
+          - .husky/**
+
+🏠 Github Configuration:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/ISSUE_TEMPLATE/**
+          - .github/CODEOWNERS
+          - .github/labels.yml

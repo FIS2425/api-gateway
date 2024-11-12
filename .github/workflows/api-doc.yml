@@ -1,0 +1,42 @@
+name: 📚 OpenAPI Documentation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'openapi.yaml'
+
+jobs:
+
+  generate-documentation:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+    
+    steps:
+    - name: Checkout ⬇️
+      uses: actions/checkout@v4.2.2
+      with:
+          show-progress: false
+
+    - name: 📥 Generate OpenAPI Documentation
+      run: |
+        npm install -g openapi-to-md
+        npx openapi-to-md -s openapi.yaml openapi.md
+        
+    - name: 📤 Commit changes
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true
+        files: openapi.md
+        message: 'docs(api): updated openapi.md 📝'
+        branch: ${{ github.head_ref || 'main' }}
