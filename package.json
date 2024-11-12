@@ -46,13 +46,13 @@
     "vitest": "2.1.4"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.7",
+    "cookie-parser": "1.4.7",
     "cors": "2.8.5",
     "express": "4.21.1",
     "kafka-node": "5.0.0",
-    "mongoose": "8.7.3",
+    "mongoose": "8.8.1",
     "swagger-ui-express": "5.0.1",
-    "winston": "3.16.0",
+    "winston": "3.17.0",
     "yamljs": "0.3.0"
   }
 }
