@@ -1,0 +1,7 @@
+---
+api_gateway_url: "localhost:8080"
+authorization_api_url: "http://localhost:3001/auth/api/v1/validate"
+services:
+  - path: "/auth/api/v1"
+    target_service: "http://localhost"
+    target_port: "3001"

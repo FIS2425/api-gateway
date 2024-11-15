@@ -19,3 +19,7 @@ seeders
 
 # Logs
 logs
+
+# Added by cargo
+
+/target
