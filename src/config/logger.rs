@@ -22,9 +22,10 @@ impl Logger {
         if !Path::new(&config.out_file).exists() {
             create_dir_all(Path::new(&config.out_file).parent().unwrap()).unwrap();
         }
-        if !Path::new(&config.out_file).exists() {
-            create_dir_all(Path::new(&config.out_file).parent().unwrap()).unwrap();
+        if !Path::new(&config.err_file).exists() {
+            create_dir_all(Path::new(&config.err_file).parent().unwrap()).unwrap();
         }
+
         if !config.use_kafka {
             Logger {
                 use_kafka: false,
@@ -47,7 +48,6 @@ impl Logger {
     pub fn info(&self, message: &str, params: &[(&str, &str)]) {
         let log_entry = self.build_log_entry("info", message, params);
 
-        // Write to file
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
@@ -55,7 +55,7 @@ impl Logger {
             .unwrap();
 
         Write::write_fmt(&mut file, format_args!("{}\n", log_entry)).unwrap();
-        // Create dir if it doesn't exist
+
         if self.use_kafka {
             self.send_to_kafka(&log_entry);
         }
@@ -64,7 +64,6 @@ impl Logger {
     pub fn warn(&self, message: &str, params: &[(&str, &str)]) {
         let log_entry = self.build_log_entry("warn", message, params);
 
-        // Write to file
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
@@ -72,7 +71,7 @@ impl Logger {
             .unwrap();
 
         Write::write_fmt(&mut file, format_args!("{}\n", log_entry)).unwrap();
-        // Create dir if it doesn't exist
+
         if self.use_kafka {
             self.send_to_kafka(&log_entry);
         }
@@ -81,7 +80,6 @@ impl Logger {
     pub fn err(&self, message: &str, params: &[(&str, &str)]) {
         let log_entry = self.build_log_entry("err", message, params);
 
-        // Write to file
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
@@ -89,7 +87,7 @@ impl Logger {
             .unwrap();
 
         Write::write_fmt(&mut file, format_args!("{}\n", log_entry)).unwrap();
-        // Create dir if it doesn't exist
+
         if self.use_kafka {
             self.send_to_kafka(&log_entry);
         }
@@ -98,7 +96,6 @@ impl Logger {
     fn build_log_entry(&self, level: &str, message: &str, params: &[(&str, &str)]) -> String {
         let timestamp = Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
 
-        // Create a JSON object with the log level, message, and timestamp
         let mut log_obj = json!({
             "service": "api-gateway",
             "timestamp": timestamp,
@@ -106,15 +103,12 @@ impl Logger {
             "message": message,
         });
 
-        // Convert the additional parameters into a HashMap
         let additional_params: HashMap<_, _> = params.iter().cloned().collect();
 
-        // Merge additional parameters into the JSON object
         if !additional_params.is_empty() {
             log_obj["params"] = json!(additional_params);
         }
 
-        // Convert the JSON object to a string
         serde_json::to_string(&log_obj).unwrap()
     }
 
