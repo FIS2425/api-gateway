@@ -5,3 +5,6 @@ services:
   - path: "/auth/api/v1"
     target_service: "http://localhost"
     target_port: "3001"
+endpoints_without_auth:
+  - endpoint: "/auth/api/v1/login"
+    method: "POST"

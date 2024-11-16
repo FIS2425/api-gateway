@@ -1,6 +1,6 @@
 mod config;
 
-use config::parser::{load_config, GatewayConfig, ServiceConfig};
+use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
 use hyper::http::request::Parts;
@@ -51,11 +51,13 @@ async fn handle_request(
         }
     };
 
-    match authorize_user(req.headers(), &config.authorization_api_url).await {
-        Ok(res) if !res.status().is_success() => return Ok(res),
-        Ok(_) => (),
-        Err(_) => return service_unavailable("Failed to connect to Authorization API"),
-    };
+    if needs_auth(path, req.method().as_str(), &config.endpoints_without_auth) {
+        match authorize_user(req.headers(), &config.authorization_api_url).await {
+            Ok(res) if !res.status().is_success() => return Ok(res),
+            Ok(_) => (),
+            Err(_) => return service_unavailable("Failed to connect to Authorization API"),
+        };
+    }
 
     let (parts, body) = req.into_parts();
     let downstream_req = build_downstream_request(parts, body, service_config).await?;
@@ -68,6 +70,12 @@ async fn handle_request(
 
 fn get_service_config<'a>(path: &str, services: &'a [ServiceConfig]) -> Option<&'a ServiceConfig> {
     services.iter().find(|c| path.starts_with(&c.path))
+}
+
+fn needs_auth(path: &str, method: &str, no_auth_endpoints: &[NoAuthEndpoints]) -> bool {
+    !no_auth_endpoints
+        .iter()
+        .any(|e| e.endpoint == path && e.method == method)
 }
 
 async fn authorize_user(headers: &HeaderMap, auth_api_url: &str) -> Result<Response<BoxBody>, ()> {
