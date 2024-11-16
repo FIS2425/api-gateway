@@ -1,0 +1,23 @@
+name: Sync OpenAPI Specs
+
+on:
+  repository_dispatch:
+    types: [spec-sync]
+  workflow_dispatch:
+
+jobs:
+  update-specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Sync OpenAPI Specs 🔄
+        run: |
+          mkdir -p docs
+          chmod +x ./sync-openapi.sh
+          ./sync-openapi.sh
+      - name: Commit and push changes 📤
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add docs
+          git diff --quiet && git diff --staged --quiet || (gir commit -m "chore: sync openapi specs🔄" && git push)
