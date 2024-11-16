@@ -10,10 +10,17 @@ pub struct ServiceConfig {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct NoAuthEndpoints {
+    pub endpoint: String,
+    pub method: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct GatewayConfig {
     pub api_gateway_url: String,
     pub authorization_api_url: String,
     pub services: Vec<ServiceConfig>,
+    pub endpoints_without_auth: Vec<NoAuthEndpoints>,
 }
 
 pub fn load_config(path: &str) -> GatewayConfig {
