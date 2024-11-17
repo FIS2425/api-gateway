@@ -35,6 +35,9 @@ jobs:
         with:
           show-progress: false
 
+      - name: Copy Config File 📄
+        run: cp config.yaml.example config.yaml
+
       - name: Configure QEMU ⚙️
         uses: docker/setup-qemu-action@v3.2.0
 
