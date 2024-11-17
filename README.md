@@ -1,4 +1,4 @@
-# Template: Node.js Microservice
+# Api-Gateway: Rust Microservice
 
 ## ⚙️ Project Setup
 
