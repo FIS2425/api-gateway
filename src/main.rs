@@ -19,9 +19,11 @@ use uuid::Uuid;
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type BoxBody = http_body_util::combinators::BoxBody<Bytes, hyper::Error>;
 
+const CONFIG: &str = include_str!("../config.yaml");
+
 #[tokio::main]
 async fn main() -> Result<(), GenericError> {
-    let config = Arc::new(load_config("config.yaml"));
+    let config = Arc::new(load_config(CONFIG));
     let logger = Arc::new(Logger::from_config(&config.logger_config));
 
     let listener = TcpListener::bind(&config.api_gateway_url).await?;

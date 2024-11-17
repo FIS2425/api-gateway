@@ -7,43 +7,35 @@
 To begin, clone the repository using SSH, then install all necessary dependencies by running:
 
 ```bash
-npm install
+cargo update
 ```
 
 ### 2. Environment Variables 🗝️
 
-Create a `.env` file by duplicating the `.env.example` file provided in the repository. Add your MongoDB credentials and update the `URL` as needed.
+Create a `config.yaml` file by duplicating the `config.yaml.example` file provided in the repository. Add the services and parameters required for your application to run.
 
 ### 3. Development 🛠️
 
 For development, use the following command:
 
 ```bash
-npm run dev
+cargo run
 ```
-
-This command runs the project with `node --watch`, allowing hot-reloading during development, similar to `nodemon`.
 
 ### 4. Production 🚀
 
 For production builds, start the application with:
 
 ```bash
-npm start
+cargo build --release && ./target/release/api-gateway
 ```
 
 ### 5. Linting 🧹
 
-To check for code quality using linters, run:
-
-```bash
-npm run lint
-```
-
 For automatic linting fixes, use:
 
 ```bash
-npm run lint-fix
+rustfmt <FileName>
 ```
 
 ### 6. Testing 🧪
@@ -51,51 +43,35 @@ npm run lint-fix
 To run tests, use the following command:
 
 ```bash
-npm test
-```
-
-### 7. Populating the Database 📚
-
-To populate the database with sample data, run:
-
-```bash
-npm run populate <FileName>
+cargo test
 ```
 
 ### 8. Logging 📝
 
-To add logs to your application, use the `logger` object provided in the `config/logger.js` file. The logger is configured to write logs to the console and a file in the `logs` directory. There are five log levels available:
-- `error`
-- `warn`
+To add logs to your application, use the `logger` object provided in the `src/config/logger.rs` file. The logger is configured to write logs to the console and a file in the `logs` directory. There are three log levels available:
 - `info`
-- `http`
-- `verbose`
-- `debug`
+- `warn`
+- `err`
 
 #### Example:
 You can log messages adding the following code to your methods:
 
 ```javascript
-logger.error('This is an error message');
-logger.http('Incoming HTTP request', {
-  method: 'GET',
-  url: '/api/appointments',
-  userUid: 'a71b0cbd-7edd-4ae1-919b-403a33fba2eb',
-  params: { date: '2024-11-04', status: 'confirmed' }
-});
+logger.info("This is an info message", &[("key1", "val1"), ("key2", "val2")]);
+logger.warn("This is an info message", &[("key1", "val1"), ("key2", "val2")]);
+logger.err("This is an info message", &[("key1", "val1"), ("key2", "val2")]);
 ```
 
 ## Docker Setup 🐳
 
 To run the application in a Docker container:
 
-1. Modify the `/workdir` setting in the `Dockerfile` to match the corresponding microservice directory.
-2. Update the `deploy-docker` workflow to deploy the correct microservice.
+1. Set the config.yaml to point to the deployed microservices.
 
 Once these changes are made, ensure Docker is installed and running on your system, then build and start the container with:
 
 ```bash
-docker compose up -d
+docker compose up --build -d
 ```
 
 This command launches your deployed Docker image in detached mode.
