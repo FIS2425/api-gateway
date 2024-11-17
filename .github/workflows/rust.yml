@@ -23,5 +23,8 @@ jobs:
       with:
         show-progress: false
         
+    - name: Copy Config File 📄
+      run: cp config.yaml.example config.yaml
+      
     - name: Build  🛠️
       run: cargo build --verbose
