@@ -1,16 +1,22 @@
 {
-  "name": "Base FIS Codespace",
-  "image": "mcr.microsoft.com/devcontainers/base:debian",
+  "name": "Rust Microservice DevContainer",
+  "image": "mcr.microsoft.com/devcontainers/rust:latest",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "installDockerComposeSwitch": false
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22",
-      "npm": "latest"
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "tamasfe.even-better-toml",
+        "vadimcn.vscode-lldb"
+      ]
     }
   },
-  "hostRequirements": {
-    "cpus": 8
+  "postCreateCommand": "cargo update",
+  "settings": {
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/target": true
+    }
   }
 }
