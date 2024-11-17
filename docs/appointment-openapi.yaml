@@ -1,0 +1,458 @@
+openapi: 3.0.0
+info:
+  title: Appointment Service
+  version: 1.0.0
+  description: >
+    Appointment microservice for medical consultation application.
+    Handles scheduling, retrieval, updating, and cancellation of patient appointments.
+
+servers:
+  - url: http://localhost:3012/api/v1
+    description: Local development server
+
+tags:
+  - name: Appointments
+    description: Endpoints related to patient appointment management
+
+paths:
+  /appointments:
+    get:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Get all appointments
+      description: Retrieve a list of all appointments in the system.
+      responses:
+        '200':
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments
+    post:
+      tags:
+          - Appointments
+      security:
+        - cookieAuth: []
+      summary: Create a new appointment
+      description: Schedule a new appointment for a patient with specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error creating the appointment
+
+  /appointments/available:
+    get:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Get available appointment slots
+      description: Retrieve available appointment slots for a specific clinic, doctor, and date.
+      parameters:
+        - in: query
+          name: clinicId
+          required: true
+          schema:
+            type: string
+          description: The ID of the clinic to check for available appointments
+        - in: query
+          name: doctorId
+          required: true
+          schema:
+            type: string
+          description: The ID of the doctor to check for available appointments
+        - in: query
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+          description: The date to check for available appointments (in YYYY-MM-DD format)
+      responses:
+        '200':
+          description: List of available appointment slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    startTime:
+                      type: string
+                      format: time
+                      description: Start time of the available appointment slot
+                    endTime:
+                      type: string
+                      format: time
+                      description: End time of the available appointment slot
+        '500':
+          description: Error obtaining clinic appointments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error obtaining clinic appointments
+                  message:
+                    type: string
+                    example: Detailed error message
+
+  /appointments/{id}:
+    get:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Get appointment by ID
+      description: Retrieve details of a specific appointment by its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the appointment to retrieve
+      responses:
+        '200':
+          description: Appointment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error retrieving the appointment
+
+    put:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Update an appointment
+      description: Modify details of an existing appointment by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the appointment to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error updating the appointment
+
+    delete:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Delete an appointment
+      description: Remove an appointment from the system by its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the appointment to delete
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Appointment deleted successfully
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error deleting the appointment
+
+  /appointments/{id}/cancel:
+    put:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Cancel an appointment
+      description: Change the status of an appointment to "cancelled" by its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the appointment to cancel
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error cancelling the appointment
+
+  /appointments/{id}/complete:
+    put:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Complete an appointment
+      description: Change the status of an appointment to "completed" by its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the appointment to complete
+      responses:
+        '200':
+          description: Appointment completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error completing the appointment
+
+  /appointments/{id}/noshow:
+    put:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Mark an appointment as no-show
+      description: Change the status of an appointment to "no-show" by its ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the appointment to mark as no-show
+      responses:
+        '200':
+          description: Appointment marked as no-show successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error marking appointment as no-show
+
+  /appointments/patient/{patientId}:
+    get:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Get all appointments for a patient
+      description: Retrieve a list of all appointments for a specific patient by their ID.
+      parameters:
+        - in: path
+          name: patientId
+          required: true
+          schema:
+            type: string
+          description: The ID of the patient whose appointments to retrieve
+      responses:
+        '200':
+          description: List of appointments for the patient
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the patient
+
+  /appointments/doctor/{doctorId}:
+    get:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Get all appointments for a doctor
+      description: Retrieve a list of all appointments for a specific doctor by their ID.
+      parameters:
+        - in: path
+          name: doctorId
+          required: true
+          schema:
+            type: string
+          description: The ID of the doctor whose appointments to retrieve
+      responses:
+        '200':
+          description: List of appointments for the doctor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the doctor
+
+  /appointments/clinic/{clinicId}:
+    get:
+      tags:
+        - Appointments
+      security:
+        - cookieAuth: []
+      summary: Get all appointments for a clinic
+      description: Retrieve a list of all appointments for a specific clinic by its ID.
+      parameters:
+        - in: path
+          name: clinicId
+          required: true
+          schema:
+            type: string
+          description: The ID of the clinic whose appointments to retrieve
+      responses:
+        '200':
+          description: List of appointments for the clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the clinic
+
+components:
+  schemas:
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the appointment
+        patientId:
+          type: string
+          description: ID of the patient associated with the appointment
+        clinicId:
+          type: string
+          description: ID of the clinic where the appointment is scheduled
+        doctorId:
+          type: string
+          description: ID of the doctor handling the appointment
+        specialty:
+          type: string
+          description: Medical specialty for the appointment
+          enum: ['family_medicine', 'nursing', 'physiotherapy', 'gynecology', 'pediatrics', 'dermatology', 'cardiology', 'neurology', 'orthopedics', 'psychiatry', 'endocrinology', 'oncology', 'radiology', 'surgery', 'ophthalmology', 'urology', 'anesthesiology', 'otolaryngology', 'gastroenterology', 'other']
+        appointmentDate:
+          type: string
+          format: date-time
+          description: Date and time of the appointment
+        status:
+          type: string
+          description: Current status of the appointment
+          enum: ["pending", "completed", "cancelled", "no-show"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Appointment creation timestamp
+
+    AppointmentCreate:
+      type: object
+      required:
+        - patientId
+        - clinicId
+        - doctorId
+        - specialty
+        - appointmentDate
+      properties:
+        patientId:
+          type: string
+          description: ID of the patient for whom the appointment is created
+        clinicId:
+          type: string
+          description: ID of the clinic where the appointment will be held
+        doctorId:
+          type: string
+          description: ID of the doctor for the appointment
+        specialty:
+          type: string
+          description: Medical specialty for the appointment
+          enum: ['family_medicine', 'nursing', 'physiotherapy', 'gynecology', 'pediatrics', 'dermatology', 'cardiology', 'neurology', 'orthopedics', 'psychiatry', 'endocrinology', 'oncology', 'radiology', 'surgery', 'ophthalmology', 'urology', 'anesthesiology', 'otolaryngology', 'gastroenterology', 'other']
+        appointmentDate:
+          type: string
+          format: date-time
+          description: Date and time of the appointment
+
+    AppointmentUpdate:
+      type: object
+      properties:
+        specialty:
+          type: string
+          description: Updated medical specialty for the appointment
+          enum: ['family_medicine', 'nursing', 'physiotherapy', 'gynecology', 'pediatrics', 'dermatology', 'cardiology', 'neurology', 'orthopedics', 'psychiatry', 'endocrinology', 'oncology', 'radiology', 'surgery', 'ophthalmology', 'urology', 'anesthesiology', 'otolaryngology', 'gastroenterology', 'other']
+        appointmentDate:
+          type: string
+          format: date-time
+          description: Updated date and time of the appointment
+        status:
+          type: string
+          description: Updated status of the appointment
+          enum: ["pending", "completed", "cancelled", "no-show"]
+
+  securitySchemes:
+    cookieAuth:
+        type: apiKey
+        in: cookie
+        name: token

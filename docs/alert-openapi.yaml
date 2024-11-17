@@ -1,0 +1,14 @@
+openapi: 3.0.0
+info:
+  title: Microservicio Template
+  version: 1.0.0
+  description: Template para microservicios
+
+servers:
+  - url: http://localhost:3001
+
+paths:
+  # Aquí irán tus rutas
+
+components:
+  # Aquí irán tus componentes reutilizables

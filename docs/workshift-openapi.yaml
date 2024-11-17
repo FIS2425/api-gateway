@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: Workshifts Service
+  version: 1.0.0
+  description: >
+    Workshift management for a personnel administration application. This microservice handles the scheduling, assignment, and modification of employee work shifts, including last-minute adjustments and cancellations.
+
+servers:
+  - url: http://localhost:3011/api/v1
+    description: Local server for development
+
+tags:
+  - name: Workshifts
+    description: Endpoints related to workshifts management
+
+paths:
+  /workshifts:
+    get:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Get all workshifts
+      responses:
+        '200':
+          description: Retrieve a list of workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Server error
+
+    post:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Create a new workshift
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+      responses:
+        '201':
+          description: Workshift created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Validation error
+
+  /workshifts/week:
+    post:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Create a new workshift for a week
+      requestBody:
+              required: true
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      doctorId:
+                        type: string
+                        description: "Unique identifier for the doctor"
+                      clinicId:
+                        type: string
+                        description: "Unique identifier for the clinic"
+                      duration:
+                        type: integer
+                        description: "Duration of each work shift in minutes"
+                        example: 480
+                      periodStartDate:
+                        type: string
+                        format: date-time
+                        description: "Start date of the week, must be a Monday"
+                      periodEndDate:
+                        type: string
+                        format: date
+                        description: "End date of the week, must be a Sunday within the same week as weekStartDate"
+                    required:
+                      - doctorId
+                      - clinicId
+                      - duration
+                      - weekStartDate
+                      - weekEndDate
+      responses:
+        '201':
+          description: Workshifts created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Invalid input or validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: "Error message explaining the issue"
+                    example: "weekStartDate must be a Monday and weekEndDate a Sunday of the same week"
+  /workshifts/{id}:
+    get:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Get a workshift by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Workshift ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retrieve a workshift
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+
+    put:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Update a workshift by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Workshift ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+      responses:
+        '200':
+          description: Workshift updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '400':
+          description: Validation error
+
+    delete:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Delete a workshift by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Workshift ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Workshift deleted
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+
+  /workshifts/doctor/{doctorId}:
+    get:
+      tags:
+        - Workshifts
+      security:
+        - cookieAuth: []
+      summary: Get workshifts by doctor ID
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          description: Doctor ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Error del servidor
+
+components:
+  schemas:
+    Workshift:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "850154d5-6617-4128-b76b-88979b1cbc44"
+        doctorId:
+          type: string
+          example: "850154d5-6617-4128-b76b-88979b1cbc46"
+        clinicId:
+          type: string
+          example: "ea12fd3d-4d3c-4ba2-b871-673c29fb69d3"
+        startDate:
+          type: string
+          format: date-time
+          example: "2024-11-01T09:00:00Z"
+        duration:
+          type: integer
+          example: 120
+
+    WorkshiftInput:
+      type: object
+      properties:
+        doctorId:
+          type: string
+          example: "850154d5-6617-4128-b76b-88979b1cbc46"
+        clinicId:
+          type: string
+          example: "ea12fd3d-4d3c-4ba2-b871-673c29fb69d3"
+        startDate:
+          type: string
+          format: date-time
+          example: "2024-11-01T09:00:00Z"
+        duration:
+          type: integer
+          example: 30
+  securitySchemes:
+    cookieAuth:
+        type: apiKey
+        in: cookie
+        name: token
