@@ -40,7 +40,13 @@ async fn main() -> Result<(), GenericError> {
         tokio::task::spawn(async move {
             let request_id = Uuid::new_v4().to_string();
 
-            logger.info("New connection", &[("request_id", &request_id)]);
+            logger.info(
+                "New connection",
+                &[
+                    ("request_id", &request_id),
+                    ("ip", conn_addr.ip().to_string().as_str()),
+                ],
+            );
             let service = service_fn(move |req| {
                 handle_request(
                     req,
