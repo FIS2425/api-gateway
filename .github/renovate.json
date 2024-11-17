@@ -2,14 +2,19 @@
   "timezone": "Europe/Madrid",
   "packageRules": [
     {
-      "matchManagers": ["npm"],
-      "matchDepTypes": ["devDependencies"],
-      "groupName": "npm (development)"
+      "matchManagers": ["cargo"],
+      "matchDepTypes": ["dependencies"],
+      "groupName": "cargo (runtime)"
     },
     {
-      "matchManagers": ["npm"],
-      "matchDepTypes": ["dependencies"],
-      "groupName": "npm (runtime)"
+      "matchManagers": ["cargo"],
+      "matchDepTypes": ["dev-dependencies"],
+      "groupName": "cargo (development)"
+    },
+    {
+      "matchManagers": ["cargo"],
+      "matchDepTypes": ["build-dependencies"],
+      "groupName": "cargo (build)"
     },
     {
       "matchManagers": ["github-actions"],
@@ -31,8 +36,8 @@
     "groupName": "vulnerable",
     "labels": ["🔒 Security", "📦 Dependencies"]
   },
-  "ignoreDeps": ["npm", "node"],
-  "enabledManagers": ["npm", "github-actions"],
+  "ignoreDeps": ["cargo", "rust"],
+  "enabledManagers": ["cargo", "github-actions"],
   "labels": ["📦 Dependencies"],
   "rebaseWhen": "behind-base-branch",
   "rangeStrategy": "pin",
@@ -41,7 +46,7 @@
     "groupName": "lockfiles",
     "schedule": ["every month"]
   },
-  "assignees": ["alvarobernal2412"],
+  "assignees": ["AntonioRodriguezRuiz"],
   "reviewers": ["adrrf"],
   "extends": ["mergeConfidence:age-confidence-badges"]
 }
