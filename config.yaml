@@ -8,3 +8,10 @@ services:
 endpoints_without_auth:
   - endpoint: "/auth/api/v1/login"
     method: "POST"
+logger_config:
+  use_kafka: true # If false, delete also kafka_host
+  kafka_host: "localhost:9092"
+  kafka_topic: "microservice-logs"
+  out_file: "logs/out.log"
+  err_file: "logs/err.log"
+  debug_file: "logs/debug.log"

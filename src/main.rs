@@ -1,5 +1,6 @@
 mod config;
 
+use config::logger::Logger;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
@@ -13,6 +14,7 @@ use reqwest::header::{HeaderMap, COOKIE};
 use std::result::Result;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use uuid::Uuid;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type BoxBody = http_body_util::combinators::BoxBody<Bytes, hyper::Error>;
@@ -20,6 +22,7 @@ type BoxBody = http_body_util::combinators::BoxBody<Bytes, hyper::Error>;
 #[tokio::main]
 async fn main() -> Result<(), GenericError> {
     let config = Arc::new(load_config("config.yaml"));
+    let logger = Arc::new(Logger::from_config(&config.logger_config));
 
     let listener = TcpListener::bind(&config.api_gateway_url).await?;
 
@@ -28,9 +31,15 @@ async fn main() -> Result<(), GenericError> {
         let (stream, _) = listener.accept().await?;
         let io = TokioIo::new(stream);
         let config = config.clone();
+        let logger = logger.clone();
 
         tokio::task::spawn(async move {
-            let service = service_fn(move |req| handle_request(req, config.clone()));
+            let request_id = Uuid::new_v4().to_string();
+
+            logger.info("New connection", &[("request_id", &request_id)]);
+            let service = service_fn(move |req| {
+                handle_request(req, config.clone(), logger.clone(), request_id.to_owned())
+            });
 
             if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
                 println!("Failed to serve connection: {:?}", err);
@@ -42,29 +51,90 @@ async fn main() -> Result<(), GenericError> {
 async fn handle_request(
     req: Request<Incoming>,
     config: Arc<GatewayConfig>,
+    logger: Arc<Logger>,
+    request_id: String,
 ) -> Result<Response<BoxBody>, GenericError> {
     let path = req.uri().path();
     let service_config = match get_service_config(path, &config.services) {
         Some(service_config) => service_config,
         None => {
+            logger.warn(
+                &format!("Path not found: {}", path),
+                &[
+                    ("request_id", &request_id),
+                    ("method", req.method().as_str()),
+                    ("url", req.uri().path().to_string().as_str()),
+                    ("params", req.uri().query().unwrap_or("")),
+                ],
+            );
             return not_found();
         }
     };
 
     if needs_auth(path, req.method().as_str(), &config.endpoints_without_auth) {
         match authorize_user(req.headers(), &config.authorization_api_url).await {
-            Ok(res) if !res.status().is_success() => return Ok(res),
+            Ok(res) if !res.status().is_success() => {
+                logger.info(
+                    "Connection closed",
+                    &[
+                        ("request_id", &request_id),
+                        ("status", res.status().as_str()),
+                    ],
+                );
+                return Ok(res);
+            }
             Ok(_) => (),
-            Err(_) => return service_unavailable("Failed to connect to Authorization API"),
+            Err(_) => {
+                logger.err(
+                    &format!(
+                        "Failed to connect to Authorization API: {}",
+                        &config.authorization_api_url
+                    ),
+                    &[
+                        ("request_id", &request_id),
+                        ("method", req.method().as_str()),
+                        ("url", req.uri().path().to_string().as_str()),
+                        ("params", req.uri().query().unwrap_or("")),
+                    ],
+                );
+                return service_unavailable("Failed to connect to Authorization API");
+            }
         };
     }
 
     let (parts, body) = req.into_parts();
+
+    // For logging
+    let cloned_parts = parts.clone();
+
     let downstream_req = build_downstream_request(parts, body, service_config).await?;
 
     match forward_request(downstream_req).await {
-        Ok(res) => Ok(res),
-        Err(_) => service_unavailable("Failed to connect to downstream service"),
+        Ok(res) => {
+            logger.info(
+                "Connection closed",
+                &[
+                    ("request_id", &request_id),
+                    ("status", res.status().as_str()),
+                ],
+            );
+            Ok(res)
+        }
+        Err(_) => {
+            logger.err(
+                &format!(
+                    "Failed to connect to downstream service {}",
+                    &service_config.target_service
+                ),
+                &[
+                    ("request_id", &request_id),
+                    ("method", cloned_parts.method.as_str()),
+                    ("url", cloned_parts.uri.path().to_string().as_str()),
+                    ("params", cloned_parts.uri.query().unwrap_or("")),
+                ],
+            );
+            service_unavailable("Failed to connect to downstream service")
+        }
     }
 }
 

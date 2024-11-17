@@ -21,6 +21,17 @@ pub struct GatewayConfig {
     pub authorization_api_url: String,
     pub services: Vec<ServiceConfig>,
     pub endpoints_without_auth: Vec<NoAuthEndpoints>,
+    pub logger_config: LoggerConfig,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct LoggerConfig {
+    pub use_kafka: bool,
+    pub kafka_host: Option<String>,
+    pub kafka_topic: Option<String>,
+    pub out_file: String,
+    pub err_file: String,
+    pub debug_file: String,
 }
 
 pub fn load_config(path: &str) -> GatewayConfig {
