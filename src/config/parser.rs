@@ -21,6 +21,8 @@ pub struct GatewayConfig {
     pub services: Vec<ServiceConfig>,
     pub endpoints_without_auth: Vec<NoAuthEndpoints>,
     pub logger_config: LoggerConfig,
+    pub docs_path: String,
+    pub openapi_path: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

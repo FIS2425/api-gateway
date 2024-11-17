@@ -1,14 +1,751 @@
 openapi: 3.0.0
 info:
-  title: Microservicio Template
+  title: API Gateway Documentation
+  description: Automatically merged API documentation
   version: 1.0.0
-  description: Template para microservicios
-
 servers:
-  - url: http://localhost:3001
-
+- url: http://0.0.0.0:8080
 paths:
-  # Aquí irán tus rutas
-
+  /workshifts:
+    get:
+      tags:
+      - Workshifts
+      summary: Get all workshifts
+      responses:
+        '200':
+          description: Retrieve a list of workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Workshifts
+      summary: Create a new workshift
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+        required: true
+      responses:
+        '201':
+          description: Workshift created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Validation error
+      security:
+      - cookieAuth: []
+  /workshifts/week:
+    post:
+      tags:
+      - Workshifts
+      summary: Create a new workshift for a week
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctorId:
+                  description: Unique identifier for the doctor
+                  type: string
+                clinicId:
+                  description: Unique identifier for the clinic
+                  type: string
+                duration:
+                  example: 480
+                  description: Duration of each work shift in minutes
+                  type: integer
+                periodStartDate:
+                  description: Start date of the week, must be a Monday
+                  type: string
+                  format: date-time
+                periodEndDate:
+                  description: End date of the week, must be a Sunday within the same week as weekStartDate
+                  type: string
+                  format: date
+              required:
+              - doctorId
+              - clinicId
+              - duration
+              - weekStartDate
+              - weekEndDate
+        required: true
+      responses:
+        '201':
+          description: Workshifts created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Invalid input or validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: weekStartDate must be a Monday and weekEndDate a Sunday of the same week
+                    description: Error message explaining the issue
+                    type: string
+      security:
+      - cookieAuth: []
+  /workshifts/{id}:
+    get:
+      tags:
+      - Workshifts
+      summary: Get a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Retrieve a workshift
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+    put:
+      tags:
+      - Workshifts
+      summary: Update a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+        required: true
+      responses:
+        '200':
+          description: Workshift updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '400':
+          description: Validation error
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Workshifts
+      summary: Delete a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Workshift deleted
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+  /workshifts/doctor/{doctorId}:
+    get:
+      tags:
+      - Workshifts
+      summary: Get workshifts by doctor ID
+      parameters:
+      - in: path
+        name: doctorId
+        description: Doctor ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Lista de workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Error del servidor
+      security:
+      - cookieAuth: []
+  /appointments:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments
+      description: Retrieve a list of all appointments in the system.
+      responses:
+        '200':
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Appointments
+      summary: Create a new appointment
+      description: Schedule a new appointment for a patient with specified details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+        required: true
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error creating the appointment
+      security:
+      - cookieAuth: []
+  /appointments/available:
+    get:
+      tags:
+      - Appointments
+      summary: Get available appointment slots
+      description: Retrieve available appointment slots for a specific clinic, doctor, and date.
+      parameters:
+      - in: query
+        name: clinicId
+        description: The ID of the clinic to check for available appointments
+        required: true
+        schema:
+          type: string
+        style: form
+      - in: query
+        name: doctorId
+        description: The ID of the doctor to check for available appointments
+        required: true
+        schema:
+          type: string
+        style: form
+      - in: query
+        name: date
+        description: The date to check for available appointments (in YYYY-MM-DD format)
+        required: true
+        schema:
+          type: string
+          format: date
+        style: form
+      responses:
+        '200':
+          description: List of available appointment slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    startTime:
+                      description: Start time of the available appointment slot
+                      type: string
+                      format: time
+                    endTime:
+                      description: End time of the available appointment slot
+                      type: string
+                      format: time
+        '500':
+          description: Error obtaining clinic appointments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    example: Error obtaining clinic appointments
+                    type: string
+                  message:
+                    example: Detailed error message
+                    type: string
+      security:
+      - cookieAuth: []
+  /appointments/{id}:
+    get:
+      tags:
+      - Appointments
+      summary: Get appointment by ID
+      description: Retrieve details of a specific appointment by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error retrieving the appointment
+      security:
+      - cookieAuth: []
+    put:
+      tags:
+      - Appointments
+      summary: Update an appointment
+      description: Modify details of an existing appointment by ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+        required: true
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error updating the appointment
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Appointments
+      summary: Delete an appointment
+      description: Remove an appointment from the system by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to delete
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Appointment deleted successfully
+                    type: string
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error deleting the appointment
+      security:
+      - cookieAuth: []
+  /appointments/{id}/cancel:
+    put:
+      tags:
+      - Appointments
+      summary: Cancel an appointment
+      description: Change the status of an appointment to "cancelled" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to cancel
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error cancelling the appointment
+      security:
+      - cookieAuth: []
+  /appointments/{id}/complete:
+    put:
+      tags:
+      - Appointments
+      summary: Complete an appointment
+      description: Change the status of an appointment to "completed" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to complete
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error completing the appointment
+      security:
+      - cookieAuth: []
+  /appointments/{id}/noshow:
+    put:
+      tags:
+      - Appointments
+      summary: Mark an appointment as no-show
+      description: Change the status of an appointment to "no-show" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to mark as no-show
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment marked as no-show successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error marking appointment as no-show
+      security:
+      - cookieAuth: []
+  /appointments/patient/{patientId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a patient
+      description: Retrieve a list of all appointments for a specific patient by their ID.
+      parameters:
+      - in: path
+        name: patientId
+        description: The ID of the patient whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the patient
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the patient
+      security:
+      - cookieAuth: []
+  /appointments/doctor/{doctorId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a doctor
+      description: Retrieve a list of all appointments for a specific doctor by their ID.
+      parameters:
+      - in: path
+        name: doctorId
+        description: The ID of the doctor whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the doctor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the doctor
+      security:
+      - cookieAuth: []
+  /appointments/clinic/{clinicId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a clinic
+      description: Retrieve a list of all appointments for a specific clinic by its ID.
+      parameters:
+      - in: path
+        name: clinicId
+        description: The ID of the clinic whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the clinic
+      security:
+      - cookieAuth: []
 components:
-  # Aquí irán tus componentes reutilizables
+  schemas:
+    Workshift:
+      type: object
+      properties:
+        id:
+          example: 850154d5-6617-4128-b76b-88979b1cbc44
+          type: string
+        doctorId:
+          example: 850154d5-6617-4128-b76b-88979b1cbc46
+          type: string
+        clinicId:
+          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
+          type: string
+        startDate:
+          example: 2024-11-01T09:00:00Z
+          type: string
+          format: date-time
+        duration:
+          example: 120
+          type: integer
+    WorkshiftInput:
+      type: object
+      properties:
+        doctorId:
+          example: 850154d5-6617-4128-b76b-88979b1cbc46
+          type: string
+        clinicId:
+          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
+          type: string
+        startDate:
+          example: 2024-11-01T09:00:00Z
+          type: string
+          format: date-time
+        duration:
+          example: 30
+          type: integer
+    Appointment:
+      type: object
+      properties:
+        id:
+          description: Unique identifier for the appointment
+          type: string
+        patientId:
+          description: ID of the patient associated with the appointment
+          type: string
+        clinicId:
+          description: ID of the clinic where the appointment is scheduled
+          type: string
+        doctorId:
+          description: ID of the doctor handling the appointment
+          type: string
+        specialty:
+          description: Medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Date and time of the appointment
+          type: string
+          format: date-time
+        status:
+          description: Current status of the appointment
+          type: string
+          enum:
+          - pending
+          - completed
+          - cancelled
+          - no-show
+        createdAt:
+          description: Appointment creation timestamp
+          type: string
+          format: date-time
+    AppointmentCreate:
+      type: object
+      properties:
+        patientId:
+          description: ID of the patient for whom the appointment is created
+          type: string
+        clinicId:
+          description: ID of the clinic where the appointment will be held
+          type: string
+        doctorId:
+          description: ID of the doctor for the appointment
+          type: string
+        specialty:
+          description: Medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Date and time of the appointment
+          type: string
+          format: date-time
+      required:
+      - patientId
+      - clinicId
+      - doctorId
+      - specialty
+      - appointmentDate
+    AppointmentUpdate:
+      type: object
+      properties:
+        specialty:
+          description: Updated medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Updated date and time of the appointment
+          type: string
+          format: date-time
+        status:
+          description: Updated status of the appointment
+          type: string
+          enum:
+          - pending
+          - completed
+          - cancelled
+          - no-show
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
