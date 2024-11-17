@@ -46,7 +46,7 @@
     "groupName": "lockfiles",
     "schedule": ["every month"]
   },
-  "assignees": ["alvarobernal2412"],
+  "assignees": ["AntonioRodriguezRuiz"],
   "reviewers": ["adrrf"],
   "extends": ["mergeConfidence:age-confidence-badges"]
 }
