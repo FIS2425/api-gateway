@@ -1,11 +1,9 @@
-FROM node:lts-alpine
-
-# TODO: Cambiar el nombre de la carpeta por el nombre de tu proyecto
-WORKDIR /template
-
+FROM rust:1.82 as builder
+WORKDIR /usr/src/api-gateway
 COPY . .
+RUN cargo install --path . --root /usr/local/cargo
 
-RUN npm ci --production && \
-    rm -rf $(npm get cache)
-
-ENTRYPOINT ["npm", "start"]
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install openssl libssl-dev libssl3 && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /usr/local/cargo/bin/api-gateway /usr/local/bin/api-gateway
+CMD ["api-gateway"]
