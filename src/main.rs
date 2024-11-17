@@ -4,6 +4,7 @@ use config::logger::Logger;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
+use hyper::header::HeaderValue;
 use hyper::http::request::Parts;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
@@ -11,6 +12,7 @@ use hyper::{Request, Response, StatusCode};
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use reqwest::header::{HeaderMap, COOKIE};
+use std::net::SocketAddr;
 use std::result::Result;
 use std::sync::Arc;
 use tokio::net::TcpListener;
@@ -30,7 +32,7 @@ async fn main() -> Result<(), GenericError> {
 
     loop {
         // Accept incoming connections
-        let (stream, _) = listener.accept().await?;
+        let (stream, conn_addr) = listener.accept().await?;
         let io = TokioIo::new(stream);
         let config = config.clone();
         let logger = logger.clone();
@@ -40,7 +42,13 @@ async fn main() -> Result<(), GenericError> {
 
             logger.info("New connection", &[("request_id", &request_id)]);
             let service = service_fn(move |req| {
-                handle_request(req, config.clone(), logger.clone(), request_id.to_owned())
+                handle_request(
+                    req,
+                    conn_addr,
+                    config.clone(),
+                    logger.clone(),
+                    request_id.to_owned(),
+                )
             });
 
             if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
@@ -52,6 +60,7 @@ async fn main() -> Result<(), GenericError> {
 
 async fn handle_request(
     req: Request<Incoming>,
+    conn_addr: SocketAddr,
     config: Arc<GatewayConfig>,
     logger: Arc<Logger>,
     request_id: String,
@@ -64,6 +73,7 @@ async fn handle_request(
                 &format!("Path not found: {}", path),
                 &[
                     ("request_id", &request_id),
+                    ("ip", conn_addr.ip().to_string().as_str()),
                     ("method", req.method().as_str()),
                     ("url", req.uri().path().to_string().as_str()),
                     ("params", req.uri().query().unwrap_or("")),
@@ -80,6 +90,7 @@ async fn handle_request(
                     "Connection closed",
                     &[
                         ("request_id", &request_id),
+                        ("ip", conn_addr.ip().to_string().as_str()),
                         ("status", res.status().as_str()),
                     ],
                 );
@@ -94,6 +105,7 @@ async fn handle_request(
                     ),
                     &[
                         ("request_id", &request_id),
+                        ("ip", conn_addr.ip().to_string().as_str()),
                         ("method", req.method().as_str()),
                         ("url", req.uri().path().to_string().as_str()),
                         ("params", req.uri().query().unwrap_or("")),
@@ -109,7 +121,7 @@ async fn handle_request(
     // For logging
     let cloned_parts = parts.clone();
 
-    let downstream_req = build_downstream_request(parts, body, service_config).await?;
+    let downstream_req = build_downstream_request(parts, body, conn_addr, service_config).await?;
 
     match forward_request(downstream_req).await {
         Ok(res) => {
@@ -117,6 +129,7 @@ async fn handle_request(
                 "Connection closed",
                 &[
                     ("request_id", &request_id),
+                    ("ip", conn_addr.ip().to_string().as_str()),
                     ("status", res.status().as_str()),
                 ],
             );
@@ -130,6 +143,7 @@ async fn handle_request(
                 ),
                 &[
                     ("request_id", &request_id),
+                    ("ip", conn_addr.ip().to_string().as_str()),
                     ("method", cloned_parts.method.as_str()),
                     ("url", cloned_parts.uri.path().to_string().as_str()),
                     ("params", cloned_parts.uri.query().unwrap_or("")),
@@ -171,6 +185,7 @@ async fn authorize_user(headers: &HeaderMap, auth_api_url: &str) -> Result<Respo
 async fn build_downstream_request(
     mut parts: Parts,
     body: Incoming,
+    conn_addr: SocketAddr,
     service_config: &ServiceConfig,
 ) -> Result<Request<BoxBody>, GenericError> {
     let uri = format!(
@@ -181,9 +196,17 @@ async fn build_downstream_request(
         parts.uri.query().unwrap_or("")
     );
 
-    parts.uri = uri.parse().unwrap();
+    let forwarded_for = if let Some(header_value) = parts.headers.get("x-forwarded-for") {
+        header_value.clone()
+    } else {
+        // If no `X-Forwarded-For` is present, set it using the client's IP address
+        HeaderValue::from_str(&conn_addr.ip().to_string()).unwrap()
+    };
 
-    // Rebuild the request with the new URI
+    parts.uri = uri.parse().unwrap();
+    parts.headers.insert("x-forwarded-for", forwarded_for);
+
+    // Rebuild the request with the new URI and headers
     let req = Request::from_parts(parts, body.boxed());
 
     Ok(req)
