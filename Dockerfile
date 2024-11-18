@@ -1,4 +1,4 @@
-FROM rust:1.82 as builder
+FROM rust:1.82 AS builder
 WORKDIR /api-gateway
 COPY . .
 RUN cargo install --path . --root /usr/local/cargo
