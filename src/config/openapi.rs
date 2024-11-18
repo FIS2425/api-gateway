@@ -5,6 +5,7 @@ use std::fs;
 use std::error::Error;
 use std::path::Path;
 use walkdir::WalkDir;
+use hyper::Uri;
 
 #[derive(Debug)]
 pub struct OpenApiMerger {
@@ -63,7 +64,16 @@ impl OpenApiMerger {
         };
 
         for (_service, spec) in &self.specs {
+            let server_url = spec.servers.first().unwrap().url.clone();
+            let uri = Uri::try_from(server_url).unwrap();
+            let mut server_path = uri.path().to_string();
+
+            if server_path.ends_with("/") {
+                server_path = server_path[..server_path.len() - 1].to_string();
+            }
+
             for (path, path_item) in spec.paths.iter() {
+                let path = format!("{}{}", server_path, path.clone());
                 merged_spec.paths.paths.insert(
                     path.clone(),
                     path_item.clone(),
