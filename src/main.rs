@@ -129,7 +129,8 @@ async fn handle_request(
     // For logging
     let cloned_parts = parts.clone();
 
-    let downstream_req = build_downstream_request(parts, body, conn_addr, service_config).await?;
+    let downstream_req =
+        build_downstream_request(parts, body, conn_addr, &request_id, service_config).await?;
 
     match forward_request(downstream_req).await {
         Ok(res) => {
@@ -194,6 +195,7 @@ async fn build_downstream_request(
     mut parts: Parts,
     body: Incoming,
     conn_addr: SocketAddr,
+    request_id: &str,
     service_config: &ServiceConfig,
 ) -> Result<Request<BoxBody>, GenericError> {
     let uri = format!(
@@ -214,8 +216,11 @@ async fn build_downstream_request(
         _ => HeaderValue::from_str(&conn_addr.ip().to_string()).unwrap(),
     };
 
+    let request_id_header = HeaderValue::from_str(request_id).unwrap();
+
     parts.uri = uri.parse().unwrap();
     parts.headers.insert("x-forwarded-for", forwarded_for);
+    parts.headers.insert("x-request-id", request_id_header);
 
     // Rebuild the request with the new URI and headers
     let req = Request::from_parts(parts, body.boxed());
