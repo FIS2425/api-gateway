@@ -18,4 +18,4 @@ kafka = "=0.10.0"
 serde_json = "=1.0.133"
 chrono = "=0.4.38"
 uuid = { version = "=1.11.0", features = [ "v4" ] }
-iptools = "0.3.0"
+iptools = "=0.3.0"
