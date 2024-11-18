@@ -3,6 +3,7 @@ use serde_yaml;
 use std::collections::HashMap;
 use std::fs;
 use std::error::Error;
+use std::path::Path;
 use walkdir::WalkDir;
 
 #[derive(Debug)]
@@ -85,9 +86,43 @@ impl OpenApiMerger {
         Ok(merged_spec)
     }
 
-    pub fn load(&self) -> Result<OpenAPI, Box<dyn Error + Send + Sync>> {
-        let content = fs::read_to_string(&self.output_path)?;
-        let spec: OpenAPI = serde_yaml::from_str(&content)?;
-        Ok(spec)
-    }
+    pub fn generate_swagger_ui(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
+        let swagger_ui_html = format!(r#"
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Swagger UI</title>
+            <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.14.0/swagger-ui.css" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.14.0/swagger-ui-bundle.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.14.0/swagger-ui-standalone-preset.js"></script>
+          </head>
+          <body>
+            <div id="swagger-ui"></div>
+            <script>
+              const ui = SwaggerUIBundle({{
+                url: 'http://{}/doc/openapi.yaml',  // Use self.url to dynamically insert the URL
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                  SwaggerUIBundle.presets.apis,
+                  SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout"
+              }});
+            </script>
+          </body>
+        </html>
+        "#, self.url);
+
+            let output_dir = Path::new(&self.output_path).parent().unwrap();
+            if !output_dir.exists() {
+                fs::create_dir_all(output_dir)?;
+            }
+
+            let html_path = Path::new(&self.output_path).with_extension("html");
+            fs::write(html_path, swagger_ui_html.replace("API_DOC_URL", &self.output_path))?;
+            Ok(())
+        }
 }
