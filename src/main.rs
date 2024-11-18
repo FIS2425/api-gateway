@@ -11,6 +11,8 @@ use hyper::service::service_fn;
 use hyper::{Request, Response, StatusCode};
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
+use iptools::ipv4;
+use iptools::ipv6;
 use reqwest::header::{HeaderMap, COOKIE};
 use std::net::SocketAddr;
 use std::result::Result;
@@ -202,11 +204,14 @@ async fn build_downstream_request(
         parts.uri.query().unwrap_or("")
     );
 
-    let forwarded_for = if let Some(header_value) = parts.headers.get("x-forwarded-for") {
-        header_value.clone()
-    } else {
-        // If no `X-Forwarded-For` is present, set it using the client's IP address
-        HeaderValue::from_str(&conn_addr.ip().to_string()).unwrap()
+    let forwarded_for = match parts.headers.get("x-forwarded-for") {
+        Some(value)
+            if ipv4::validate_ip(value.to_str().unwrap_or_default())
+                || ipv6::validate_ip(value.to_str().unwrap_or_default()) =>
+        {
+            value.clone()
+        }
+        _ => HeaderValue::from_str(&conn_addr.ip().to_string()).unwrap(),
     };
 
     parts.uri = uri.parse().unwrap();
