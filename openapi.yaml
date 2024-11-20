@@ -567,6 +567,696 @@ paths:
           description: Error del servidor
       security:
       - cookieAuth: []
+  /api/v1/users:
+    post:
+      tags:
+      - Users
+      summary: Create User
+      description: Creates a new user with specified roles, email, and associated IDs for doctor or patient.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  example: new_user@example.com
+                  description: Email address of the user.
+                  type: string
+                password:
+                  example: securepassword123
+                  description: User's password.
+                  type: string
+                roles:
+                  example:
+                  - admin
+                  - doctor
+                  description: List of roles assigned to the user.
+                  type: array
+                  items:
+                    type: string
+                doctorid:
+                  nullable: true
+                  example: doctor123
+                  description: Unique ID if the user is a doctor.
+                  type: string
+                patientid:
+                  nullable: true
+                  example: patient456
+                  description: Unique ID if the user is a patient.
+                  type: string
+              required:
+              - email
+              - password
+        required: true
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    example: new_user@example.com
+                    type: string
+                  roles:
+                    example:
+                    - admin
+                    - doctor
+                    type: array
+                    items:
+                      type: string
+                  doctorid:
+                    nullable: true
+                    example: doctor123
+                    type: string
+                  patientid:
+                    nullable: true
+                    example: patient456
+                    type: string
+        '400':
+          description: Bad request - missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                example:
+                  email: Email is required
+                  password: Password is required
+                type: object
+                additionalProperties:
+                  type: string
+        '401':
+          description: Unauthorized - token missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: No token provided
+                    type: string
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Forbidden
+                    type: string
+        '500':
+          $ref: '#/components/responses/ServerError'
+      security:
+      - cookieAuth: []
+  /api/v1/users/{id}:
+    get:
+      tags:
+      - Users
+      summary: Retrieve user information
+      description: Retrieve user details by user ID. Requires the user to be the owner or have specific roles.
+      parameters:
+      - in: path
+        name: id
+        description: ID of the user to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  email:
+                    type: string
+                  username:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                _id: 617f1f77bcf86cd799439011
+                createdAt: 2023-01-01T12:00:00Z
+                email: user@example.com
+                roles:
+                - user
+                updatedAt: 2023-01-10T12:00:00Z
+                username: johndoe
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Token not valid
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Forbidden
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+    put:
+      tags:
+      - Users
+      summary: Update user information
+      description: Update user details by user ID. Requires the user to be the owner or have specific roles.
+      parameters:
+      - in: path
+        name: id
+        description: ID of the user to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  example: user@example.com
+                  description: Email address of the user.
+                  type: string
+                password:
+                  example: securepassword123
+                  description: User's password.
+                  type: string
+                roles:
+                  example:
+                  - admin
+                  - doctor
+                  description: List of roles assigned to the user.
+                  type: array
+                  items:
+                    type: string
+        required: true
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                _id: 617f1f77bcf86cd799439011
+                createdAt: 2023-01-01T12:00:00Z
+                email: user@example.com
+                roles:
+                - doctor
+                updatedAt: 2023-01-10T12:00:00Z
+        '400':
+          description: Bad request - missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                example:
+                  email: Email is required
+                  password: Password is required
+                type: object
+                additionalProperties:
+                  type: string
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Token not valid
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Forbidden
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+    delete:
+      tags:
+      - Users
+      summary: Deletes user
+      description: Delete user by user ID. Requires the user to have specific roles.
+      parameters:
+      - in: path
+        name: id
+        description: ID of the user to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+              example:
+                _id: 617f1f77bcf86cd799439011
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Token not valid
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Unauthorized
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+  /api/v1/users/change-password:
+    post:
+      tags:
+      - Users
+      summary: Change user password
+      description: Allows authenticated users to change their password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  example: oldPassword123
+                  description: The current password of the user.
+                  type: string
+                newPassword:
+                  example: newPassword456
+                  description: The new password to set.
+                  type: string
+              required:
+              - currentPassword
+              - newPassword
+        required: true
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Password changed successfully
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: ''
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Unauthorized
+                    type: string
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Forbidden
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Error when authenticating
+                    type: string
+  /api/v1/users/enable-2fa:
+    post:
+      tags:
+      - Users
+      summary: Enable two-factor authentication
+      description: Allows authenticated users to enable two-factor authentication.
+      responses:
+        '200':
+          description: 2FA successfully enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: 2FA enabled successfully
+                    type: string
+                  qrCodeUrl:
+                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+                    type: string
+                    format: uri
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Bad request
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Unauthorized
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Internal server error
+                    type: string
+  /api/v1/users/verify-2fa:
+    post:
+      tags:
+      - Users
+      summary: Verify two-factor authentication
+      description: Allows authenticated users to verify two-factor authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                  description: The user's unique ID.
+                  type: string
+                totpToken:
+                  example: '123456'
+                  description: The two-factor authentication token.
+                  type: string
+              required:
+              - userId
+              - totpToken
+        required: true
+      responses:
+        '200':
+          description: 2FA token verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Login successful
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: 2FA not enabled for this user
+                    type: string
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Invalid 2FA token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Internal server error
+                    type: string
+  /api/v1/login:
+    post:
+      tags:
+      - Authentication
+      summary: User Login
+      description: Authenticates a user with their email and password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  example: admin@email.com
+                  description: The user's unique email.
+                  type: string
+                password:
+                  example: admin123
+                  description: The user's password.
+                  type: string
+              required:
+              - email
+              - password
+        required: true
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Login successful
+                    type: string
+        '401':
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Invalid credentials
+                    type: string
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/v1/logout:
+    post:
+      tags:
+      - Authentication
+      summary: User Logout
+      description: Logs out a user by clearing authentication tokens.
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Logout successful
+                    type: string
+        '401':
+          description: Unauthorized - user is not logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Not logged in
+                    type: string
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/v1/validate:
+    get:
+      tags:
+      - Authentication
+      summary: Validates the user's token.
+      description: Checks the validity of the token provided in the user's cookies.
+      operationId: validateToken
+      responses:
+        '200':
+          description: Token is valid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Token is valid
+                    type: string
+        '401':
+          description: Unauthorized - Token is missing, expired, or invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Token expired or invalid.
+                    type: string
 components:
   schemas:
     Appointment:
@@ -744,6 +1434,61 @@ components:
         duration:
           example: 30
           type: integer
+    User:
+      description: Schema for the User model, including fields for unique ID, email, password, role, and optional associations with patient and clinic.
+      type: object
+      properties:
+        _id:
+          example: 550e8400-e29b-41d4-a716-446655440000
+          description: Unique identifier for the user. Defaults to a generated UUID.
+          type: string
+          format: uuid
+        email:
+          example: john_doe@email.com
+          description: Unique email for the user.
+          type: string
+        password:
+          description: Hashed password of the user.
+          type: string
+        roles:
+          example:
+          - doctor
+          - clinicadmin
+          description: List of roles assigned to the user.
+          default:
+          - patient
+          type: array
+          items:
+            type: string
+            enum:
+            - admin
+            - clinicadmin
+            - doctor
+            - patient
+        doctorid:
+          nullable: true
+          example: doctor12345
+          description: Identifier of the doctor if the user is a clinic doctor.
+          type: string
+        patientid:
+          nullable: true
+          example: patient12345
+          description: Identifier of the patient if the user is associated with a patient record.
+          type: string
+        createdAt:
+          example: 2023-10-25T08:40:51.620Z
+          description: Timestamp when the user was created.
+          type: string
+          format: date-time
+        updatedAt:
+          example: 2023-10-26T08:40:51.620Z
+          description: Timestamp when the user was last updated.
+          type: string
+          format: date-time
+      required:
+      - email
+      - password
+      - roles
   securitySchemes:
     cookieAuth:
       type: apiKey
