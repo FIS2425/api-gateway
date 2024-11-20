@@ -6,7 +6,7 @@ on:
       - main
       - develop
   pull_request:
-    branches: 
+    branches:
       - main
       - develop
 
@@ -18,13 +18,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout ⬇️
-      uses: actions/checkout@v4.2.2
-      with:
-        show-progress: false
-        
-    - name: Copy Config File 📄
-      run: cp config.yaml.example config.yaml
-      
-    - name: Build  🛠️
-      run: cargo build --verbose
+      - name: Checkout ⬇️
+        uses: actions/checkout@v4.2.2
+        with:
+          show-progress: false
+
+      - name: Cache Dependencies 📦
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Copy Config File 📄
+        run: cp config.yaml.example config.yaml
+
+      - name: Build  🛠️
+        run: cargo build --verbose
