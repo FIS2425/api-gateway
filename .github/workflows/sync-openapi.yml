@@ -8,13 +8,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache Dependencies 📦
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Sync OpenAPI Specs 🔄
+        timeout-minutes: 2
         run: |
           mkdir -p docs
+          cp config.yaml.example config.yaml
           ./sync-openapi.sh
+          (cargo run &)
+          sleep 30
+          pkill -f cargo || true
+
       - name: Commit and push changes 📤
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          git add docs
+          git add .
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: sync openapi specs🔄" && git push)
