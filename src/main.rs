@@ -2,7 +2,6 @@ mod config;
 
 use config::logger::Logger;
 use config::openapi::OpenApiMerger;
-use openapiv3::OpenAPI;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
@@ -15,6 +14,7 @@ use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use iptools::ipv4;
 use iptools::ipv6;
+use openapiv3::OpenAPI;
 use reqwest::header::{HeaderMap, COOKIE};
 use std::net::SocketAddr;
 use std::result::Result;
@@ -32,7 +32,11 @@ async fn main() -> Result<(), GenericError> {
     let config = Arc::new(load_config(CONFIG));
     let logger = Arc::new(Logger::from_config(&config.logger_config));
 
-    merge_openapi_specs(&config.api_gateway_url, &config.docs_path, &config.openapi_path)?;
+    merge_openapi_specs(
+        &config.api_gateway_url,
+        &config.docs_path,
+        &config.openapi_path,
+    )?;
 
     let listener = TcpListener::bind(&config.api_gateway_url).await?;
 
@@ -70,7 +74,11 @@ async fn main() -> Result<(), GenericError> {
     }
 }
 
-fn merge_openapi_specs(url: &str, docs_path:&str, output_path: &str) -> Result<OpenAPI, Box<dyn std::error::Error + Send + Sync>> {
+fn merge_openapi_specs(
+    url: &str,
+    docs_path: &str,
+    output_path: &str,
+) -> Result<OpenAPI, Box<dyn std::error::Error + Send + Sync>> {
     let mut merger = OpenApiMerger::new(url, docs_path, output_path);
     merger.load_specs()?;
     let merged_spec = merger.merge()?;
@@ -88,8 +96,8 @@ async fn handle_request(
     let path = req.uri().path();
 
     match path {
-        "/doc/openapi.yaml" => return serve_openapi_spec(&config.openapi_path).await,
-        "/doc" => return serve_swagger_ui(&config.openapi_path).await,
+        "/docs/openapi.yaml" => return serve_openapi_spec(&config.openapi_path).await,
+        "/docs" => return serve_swagger_ui(&config.openapi_path).await,
         _ => (),
     }
 
