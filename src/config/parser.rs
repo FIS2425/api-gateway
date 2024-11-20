@@ -17,10 +17,13 @@ pub struct NoAuthEndpoints {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct GatewayConfig {
     pub api_gateway_url: String,
+    pub is_https: bool,
     pub authorization_api_url: String,
     pub services: Vec<ServiceConfig>,
     pub endpoints_without_auth: Vec<NoAuthEndpoints>,
     pub logger_config: LoggerConfig,
+    pub docs_path: String,
+    pub openapi_path: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

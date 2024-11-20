@@ -1,6 +1,7 @@
 mod config;
 
 use config::logger::Logger;
+use config::openapi::OpenApiMerger;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
@@ -13,6 +14,7 @@ use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use iptools::ipv4;
 use iptools::ipv6;
+use openapiv3::OpenAPI;
 use reqwest::header::{HeaderMap, COOKIE};
 use std::net::SocketAddr;
 use std::result::Result;
@@ -29,6 +31,14 @@ const CONFIG: &str = include_str!("../config.yaml");
 async fn main() -> Result<(), GenericError> {
     let config = Arc::new(load_config(CONFIG));
     let logger = Arc::new(Logger::from_config(&config.logger_config));
+
+    let url = format!(
+        "{}://{}",
+        if config.is_https { "https" } else { "http" },
+        config.api_gateway_url
+    );
+
+    merge_openapi_specs(&url, &config.docs_path, &config.openapi_path)?;
 
     let listener = TcpListener::bind(&config.api_gateway_url).await?;
 
@@ -66,6 +76,18 @@ async fn main() -> Result<(), GenericError> {
     }
 }
 
+fn merge_openapi_specs(
+    url: &str,
+    docs_path: &str,
+    output_path: &str,
+) -> Result<OpenAPI, Box<dyn std::error::Error + Send + Sync>> {
+    let mut merger = OpenApiMerger::new(url, docs_path, output_path);
+    merger.load_specs()?;
+    let merged_spec = merger.merge()?;
+    merger.generate_swagger_ui()?;
+    Ok(merged_spec)
+}
+
 async fn handle_request(
     req: Request<Incoming>,
     conn_addr: SocketAddr,
@@ -74,6 +96,13 @@ async fn handle_request(
     request_id: String,
 ) -> Result<Response<BoxBody>, GenericError> {
     let path = req.uri().path();
+
+    match path {
+        "/docs/openapi.yaml" => return serve_openapi_spec(&config.openapi_path).await,
+        "/docs" => return serve_swagger_ui(&config.openapi_path).await,
+        _ => (),
+    }
+
     let service_config = match get_service_config(path, &config.services) {
         Some(service_config) => service_config,
         None => {
@@ -159,6 +188,47 @@ async fn handle_request(
                 ],
             );
             service_unavailable("Failed to connect to downstream service")
+        }
+    }
+}
+
+async fn serve_openapi_spec(openapi_path: &str) -> Result<Response<BoxBody>, GenericError> {
+    match tokio::fs::read_to_string(openapi_path).await {
+        Ok(content) => {
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header("Content-Type", "application/yaml")
+                .body(full(Bytes::from(content)))
+                .unwrap();
+            Ok(response)
+        }
+        Err(_) => {
+            let response = Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(full(Bytes::from("OpenAPI Specification Not Found")))
+                .unwrap();
+            Ok(response)
+        }
+    }
+}
+
+async fn serve_swagger_ui(openapi_path: &str) -> Result<Response<BoxBody>, GenericError> {
+    let html_path = openapi_path.replace(".yaml", ".html");
+    match tokio::fs::read_to_string(&html_path).await {
+        Ok(content) => {
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .header("Content-Type", "text/html")
+                .body(full(Bytes::from(content)))
+                .unwrap();
+            Ok(response)
+        }
+        Err(_) => {
+            let response = Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(full(Bytes::from("Swagger UI Not Found")))
+                .unwrap();
+            Ok(response)
         }
     }
 }
