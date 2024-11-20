@@ -1,11 +1,11 @@
+use hyper::Uri;
 use openapiv3::{OpenAPI, Server};
 use serde_yaml;
 use std::collections::HashMap;
-use std::fs;
 use std::error::Error;
+use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
-use hyper::Uri;
 
 #[derive(Debug)]
 pub struct OpenApiMerger {
@@ -32,15 +32,13 @@ impl OpenApiMerger {
             .filter_map(|e| e.ok())
         {
             let path = entry.path();
-            if path.extension().map_or(false, |e| e == "yaml" || e == "yml") {
+            if path
+                .extension()
+                .map_or(false, |e| e == "yaml" || e == "yml")
+            {
                 let content = fs::read_to_string(path)?;
                 let spec: OpenAPI = serde_yaml::from_str(&content)?;
-                let service_name = path
-                    .file_stem()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string();
+                let service_name = path.file_stem().unwrap().to_str().unwrap().to_string();
                 self.specs.insert(service_name, spec);
             }
         }
@@ -57,7 +55,7 @@ impl OpenApiMerger {
                 ..Default::default()
             },
             servers: vec![Server {
-                url: format!("http://{}", self.url),
+                url: String::from("/"),
                 ..Default::default()
             }],
             ..Default::default()
@@ -74,19 +72,23 @@ impl OpenApiMerger {
 
             for (path, path_item) in spec.paths.iter() {
                 let path = format!("{}{}", server_path, path.clone());
-                merged_spec.paths.paths.insert(
-                    path.clone(),
-                    path_item.clone(),
-                );
+                merged_spec
+                    .paths
+                    .paths
+                    .insert(path.clone(), path_item.clone());
             }
 
             if let Some(components) = &spec.components {
                 let merged_components = merged_spec.components.get_or_insert(Default::default());
                 for (name, schema) in &components.schemas {
-                    merged_components.schemas.insert(name.clone(), schema.clone());
+                    merged_components
+                        .schemas
+                        .insert(name.clone(), schema.clone());
                 }
                 for (name, scheme) in &components.security_schemes {
-                    merged_components.security_schemes.insert(name.clone(), scheme.clone());
+                    merged_components
+                        .security_schemes
+                        .insert(name.clone(), scheme.clone());
                 }
             }
         }
@@ -97,7 +99,8 @@ impl OpenApiMerger {
     }
 
     pub fn generate_swagger_ui(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let swagger_ui_html = format!(r#"
+        let swagger_ui_html = format!(
+            r#"
         <!DOCTYPE html>
         <html lang="en">
           <head>
@@ -112,7 +115,7 @@ impl OpenApiMerger {
             <div id="swagger-ui"></div>
             <script>
               const ui = SwaggerUIBundle({{
-                url: 'http://{}/doc/openapi.yaml',  // Use self.url to dynamically insert the URL
+                url: '{}/docs/openapi.yaml',
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
@@ -124,15 +127,20 @@ impl OpenApiMerger {
             </script>
           </body>
         </html>
-        "#, self.url);
+        "#,
+            self.url
+        );
 
-            let output_dir = Path::new(&self.output_path).parent().unwrap();
-            if !output_dir.exists() {
-                fs::create_dir_all(output_dir)?;
-            }
-
-            let html_path = Path::new(&self.output_path).with_extension("html");
-            fs::write(html_path, swagger_ui_html.replace("API_DOC_URL", &self.output_path))?;
-            Ok(())
+        let output_dir = Path::new(&self.output_path).parent().unwrap();
+        if !output_dir.exists() {
+            fs::create_dir_all(output_dir)?;
         }
+
+        let html_path = Path::new(&self.output_path).with_extension("html");
+        fs::write(
+            html_path,
+            swagger_ui_html.replace("API_DOC_URL", &self.output_path),
+        )?;
+        Ok(())
+    }
 }

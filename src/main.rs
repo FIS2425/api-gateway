@@ -32,11 +32,13 @@ async fn main() -> Result<(), GenericError> {
     let config = Arc::new(load_config(CONFIG));
     let logger = Arc::new(Logger::from_config(&config.logger_config));
 
-    merge_openapi_specs(
-        &config.api_gateway_url,
-        &config.docs_path,
-        &config.openapi_path,
-    )?;
+    let url = format!(
+        "{}://{}",
+        if config.is_https { "https" } else { "http" },
+        config.api_gateway_url
+    );
+
+    merge_openapi_specs(&url, &config.docs_path, &config.openapi_path)?;
 
     let listener = TcpListener::bind(&config.api_gateway_url).await?;
 
