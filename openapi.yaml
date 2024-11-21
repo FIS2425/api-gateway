@@ -198,6 +198,27 @@ paths:
           description: Error deleting the appointment
       security:
       - cookieAuth: []
+  /api/v1/appointments/{id}/weather:
+    get:
+      tags:
+      - Appointments
+      summary: Get weather forecast for appointment
+      description: Retrieve weather forecast for the location and date of a specific appointment by ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment for which to retrieve weather information
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Weather forecast for the appointment date and location
+        '404':
+          description: Appointment or weather data not found
+        '500':
+          description: Error retrieving the weather information
   /api/v1/appointments/{id}/cancel:
     put:
       tags:

@@ -3,7 +3,7 @@ info:
   title: Appointment Service
   version: 1.0.0
   description: >
-    Appointment microservice for medical consultation application.
+    Appointment management microservice for medical consultation application.
     Handles scheduling, retrieval, updating, and cancellation of patient appointments.
 
 servers:
@@ -205,6 +205,27 @@ paths:
           description: Appointment not found
         '500':
           description: Error deleting the appointment
+
+  /appointments/{id}/weather:
+      get:
+        tags:
+          - Appointments
+        summary: Get weather forecast for appointment
+        description: Retrieve weather forecast for the location and date of a specific appointment by ID.
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+            description: The ID of the appointment for which to retrieve weather information
+        responses:
+          '200':
+            description: Weather forecast for the appointment date and location
+          '404':
+            description: Appointment or weather data not found
+          '500':
+            description: Error retrieving the weather information
 
   /appointments/{id}/cancel:
     put:
