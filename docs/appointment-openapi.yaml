@@ -9,6 +9,8 @@ info:
 servers:
   - url: http://localhost:3012/api/v1
     description: Local development server
+  - url: /api/v1
+    description: Production server
 
 tags:
   - name: Appointments
