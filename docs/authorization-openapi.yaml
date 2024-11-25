@@ -667,13 +667,42 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /validate:
+  /token/refresh:
+    get:
+      summary: Refreshes the user's token.
+      description: Refreshes the user's auth and refresh tokens and sets new values in cookies.
+      tags:
+        - Authentication
+      operationId: validateAuthToken
+      responses:
+        '200':
+          description: Tokens refreshed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Tokens refreshed
+        '401':
+          description: Unauthorized - Token is missing, expired, or invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Token expired or invalid.
+
+  /token/validate:
     get:
       summary: Validates the user's token.
       description: Checks the validity of the token provided in the user's cookies.
       tags:
         - Authentication
-      operationId: validateToken
+      operationId: validateAuthToken
       responses:
         '200':
           description: Token is valid.
