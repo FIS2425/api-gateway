@@ -1,5 +1,6 @@
 mod config;
 
+use clap::{Arg, Command};
 use config::logger::Logger;
 use config::openapi::OpenApiMerger;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
@@ -25,11 +26,98 @@ use uuid::Uuid;
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type BoxBody = http_body_util::combinators::BoxBody<Bytes, hyper::Error>;
 
-const CONFIG: &str = include_str!("../config.yaml");
-
 #[tokio::main]
-async fn main() -> Result<(), GenericError> {
-    let config = Arc::new(load_config(CONFIG));
+async fn main() -> () {
+    let matches = Command::new("HyperGate")
+        .version("0.1.0")
+        .author("@adrrf @AntonioRodriguezRuiz @alvarobernal2412")
+        .about("An API Gateway built with Rust and Hyper")
+        .subcommand(
+            Command::new("merge")
+                .about("Merge OpenAPI specs")
+                .arg(
+                    Arg::new("url")
+                        .long("url")
+                        .required(true)
+                        .help("The url of the API Gateway."),
+                )
+                .arg(
+                    Arg::new("specs")
+                        .long("specs")
+                        .required(true)
+                        .help("Directory of OpenAPI specs to merge."),
+                )
+                .arg(
+                    Arg::new("output")
+                        .long("output")
+                        .required(true)
+                        .help("Output path of the HTML OpenAPI merged spec."),
+                ),
+        )
+        .subcommand(
+            Command::new("serve")
+                .about("Serve the API Gateway")
+                .arg(
+                    Arg::new("conf")
+                        .long("conf")
+                        .required(true)
+                        .help("Path to the configuration file."),
+                )
+                .arg(
+                    Arg::new("spec")
+                        .long("specs")
+                        .required(true)
+                        .help("Path to the OpenAPI spec."),
+                )
+                .arg(
+                    Arg::new("html")
+                        .long("html")
+                        .required(true)
+                        .help("Path to the OpenAPI HTML."),
+                ),
+        )
+        .get_matches();
+
+    match matches.subcommand() {
+        Some(("merge", sub_matches)) => {
+            let url = sub_matches
+                .get_one::<String>("url")
+                .expect("URL is required.");
+            let specs = sub_matches
+                .get_one::<String>("specs")
+                .expect("Specs directory is required.");
+            let output = sub_matches
+                .get_one::<String>("output")
+                .expect("Output path is required.");
+            println!("Merging OpenAPI specs...");
+            if let Err(err) = merge_openapi_specs(url, specs, output).await {
+                eprintln!("Error merging OpenAPI specs: {:?}", err);
+            }
+        }
+        Some(("serve", sub_matches)) => {
+            let config = sub_matches
+                .get_one::<String>("conf")
+                .expect("Config file is required.");
+            let spec = sub_matches
+                .get_one::<String>("spec")
+                .expect("OpenAPI spec is required.");
+            let html = sub_matches
+                .get_one::<String>("html")
+                .expect("HTML path is required.");
+            if let Err(err) = api_gateway(config, spec, html).await {
+                println!("Error: {:?}", err);
+            }
+        }
+        _ => println!("Invalid command"),
+    }
+}
+
+async fn api_gateway(
+    config_path: &str,
+    openapi_spec: &str,
+    html_path: &str,
+) -> Result<(), GenericError> {
+    let config = Arc::new(load_config(config_path));
     let logger = Arc::new(Logger::from_config(&config.logger_config));
 
     let url = format!(
@@ -38,8 +126,10 @@ async fn main() -> Result<(), GenericError> {
         config.api_gateway_url
     );
 
-    merge_openapi_specs(&url, &config.docs_path, &config.openapi_path)?;
-
+    println!(
+        "HyperGate🚀 listening at {} \n \tOpenAPI specification at {}/docs",
+        url, url
+    );
     let listener = TcpListener::bind(&config.api_gateway_url).await?;
 
     loop {
@@ -48,9 +138,13 @@ async fn main() -> Result<(), GenericError> {
         let io = TokioIo::new(stream);
         let config = config.clone();
         let logger = logger.clone();
+        let html = html_path.to_string();
+        let spec = openapi_spec.to_string();
 
         tokio::task::spawn(async move {
             let request_id = Uuid::new_v4().to_string();
+            let html = &html;
+            let spec = &spec;
 
             logger.info(
                 "New connection",
@@ -66,6 +160,8 @@ async fn main() -> Result<(), GenericError> {
                     config.clone(),
                     logger.clone(),
                     request_id.to_owned(),
+                    spec,
+                    html,
                 )
             });
 
@@ -76,7 +172,7 @@ async fn main() -> Result<(), GenericError> {
     }
 }
 
-fn merge_openapi_specs(
+async fn merge_openapi_specs(
     url: &str,
     docs_path: &str,
     output_path: &str,
@@ -85,6 +181,7 @@ fn merge_openapi_specs(
     merger.load_specs()?;
     let merged_spec = merger.merge()?;
     merger.generate_swagger_ui()?;
+    println!("OpenAPI specs merged successfully.");
     Ok(merged_spec)
 }
 
@@ -94,12 +191,14 @@ async fn handle_request(
     config: Arc<GatewayConfig>,
     logger: Arc<Logger>,
     request_id: String,
+    openapi_path: &str,
+    html_path: &str,
 ) -> Result<Response<BoxBody>, GenericError> {
     let path = req.uri().path();
 
     match path {
-        "/docs/openapi.yaml" => return serve_openapi_spec(&config.openapi_path).await,
-        "/docs" => return serve_swagger_ui(&config.openapi_path).await,
+        "/docs/spec" => return serve_openapi_spec(openapi_path).await,
+        "/docs" => return serve_swagger_ui(html_path).await,
         _ => (),
     }
 
@@ -212,8 +311,7 @@ async fn serve_openapi_spec(openapi_path: &str) -> Result<Response<BoxBody>, Gen
     }
 }
 
-async fn serve_swagger_ui(openapi_path: &str) -> Result<Response<BoxBody>, GenericError> {
-    let html_path = openapi_path.replace(".yaml", ".html");
+async fn serve_swagger_ui(html_path: &str) -> Result<Response<BoxBody>, GenericError> {
     match tokio::fs::read_to_string(&html_path).await {
         Ok(content) => {
             let response = Response::builder()
