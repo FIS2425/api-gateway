@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml;
+use std::fs::File;
+use std::io::Read;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ServiceConfig {
@@ -22,8 +24,6 @@ pub struct GatewayConfig {
     pub services: Vec<ServiceConfig>,
     pub endpoints_without_auth: Vec<NoAuthEndpoints>,
     pub logger_config: LoggerConfig,
-    pub docs_path: String,
-    pub openapi_path: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -36,6 +36,11 @@ pub struct LoggerConfig {
     pub debug_file: String,
 }
 
-pub fn load_config(file_str: &str) -> GatewayConfig {
-    serde_yaml::from_str(file_str).unwrap()
+pub fn load_config(config_path: &str) -> GatewayConfig {
+    let mut file = File::open(config_path).expect("Unable to open config file");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .expect("Unable to read config file");
+
+    serde_yaml::from_str(&contents).expect("Error parsing config file")
 }

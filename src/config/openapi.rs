@@ -115,7 +115,7 @@ impl OpenApiMerger {
             <div id="swagger-ui"></div>
             <script>
               const ui = SwaggerUIBundle({{
-                url: '{}/docs/openapi.yaml',
+                url: '{}/docs/spec',
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
