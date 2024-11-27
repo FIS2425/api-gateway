@@ -1,14 +1,749 @@
 openapi: 3.0.0
 info:
-  title: Microservicio Template
-  version: 1.0.0
-  description: Template para microservicios
-
+  title: Clinical History API
+  description: API to manage patient clinical histories.
+  version: 1.0.1
 servers:
-  - url: http://localhost:3001
-
+  - url: http://localhost:3005/api/v1
+    description: Local development server
 paths:
-  # Aquí irán tus rutas
-
+  /histories:
+    get:
+      summary: Get all clinical histories
+      responses:
+        '200':
+          description: Returns a list of all clinical histories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClinicalHistory'
+        '500':
+          description: Error retrieving clinical histories
+    post:
+      summary: Create a new clinical history
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClinicalHistory'
+      responses:
+        '201':
+          description: Clinical history created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Patient ID is required or validation error
+        '500':
+          description: Error creating clinical history
+  /histories/{id}:
+    get:
+      summary: Get a clinical history by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the requested clinical history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '500':
+          description: Error retrieving clinical history
+    delete:
+      summary: Delete a clinical history by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Clinical history deleted successfully
+        '400':
+          description: Clinical history ID is required
+        '500':
+          description: Error deleting clinical history
+  /histories/patient/{patientId}:
+    get:
+      summary: Get a clinical history by patient ID
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the clinical history for the requested patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '500':
+          description: Error retrieving clinical history for patient
+    delete:
+      summary: Delete a clinical history by patient ID
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Clinical history for the patient deleted successfully
+        '400':
+          description: Patient ID is required
+        '500':
+          description: Error deleting clinical history for patient
+  /histories/{id}/allergy:
+    post:
+      summary: Add an allergy to a clinical history
+      description: Adds an allergy to the allergies set in a specific clinical history.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the clinical history.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                allergy:
+                  type: string
+                  description: The name of the allergy to add.
+              required:
+                - allergy
+      responses:
+        '200':
+          description: Allergy successfully added to the clinical history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  allergies:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Missing clinical history ID or allergy in the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Clinical history not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error while adding the allergy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /histories/{id}/allergy/{allergy}:
+    delete:
+      summary: Remove an allergy from a clinical history
+      description: Removes an allergy from the allergies set in a specific clinical history.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the clinical history.
+          schema:
+            type: string
+        - name: allergy
+          in: path
+          required: true
+          description: The name of the allergy to remove.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Allergy successfully removed from the clinical history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  allergies:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Missing clinical history ID or allergy in the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Clinical history not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error while removing the allergy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /histories/{id}/treatment:
+    post:
+      summary: Add a new treatment to a clinical history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Treatment'
+      responses:
+        '200':
+          description: Treatment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID is required or validation error
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error adding treatment
+  /histories/{id}/treatment/{treatmentId}:
+    delete:
+      summary: Delete a treatment from a clinical history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: treatmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Treatment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Treatment ID is required
+        '404':
+          description: Clinical history or treatment not found
+        '500':
+          description: Error deleting treatment
+    put:
+      summary: Update a treatment in a clinical history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: treatmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Treatment'
+      responses:
+        '200':
+          description: Treatment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Treatment ID is required, or validation error
+        '404':
+          description: Clinical history or treatment not found
+        '500':
+          description: Error updating treatment
+  /histories/{id}/condition:
+    post:
+      summary: Add a new current condition to a clinical history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentCondition'
+      responses:
+        '200':
+          description: Current condition added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID is required or validation error
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error adding current condition
+  /histories/{id}/condition/{currentConditionId}:
+    delete:
+      summary: Delete a current condition from a clinical history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: currentConditionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current condition deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Current condition ID is required
+        '404':
+          description: Clinical history or current condition not found
+        '500':
+          description: Error deleting current condition
+    put:
+      summary: Update a current condition in a clinical history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: currentConditionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentCondition'
+      responses:
+        '200':
+          description: Current condition updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Current condition ID is required, or validation error
+        '404':
+          description: Clinical history or current condition not found
+        '500':
+          description: Error updating current condition
+  /histories/{id}/image:
+    post:
+      summary: Upload an image to a clinical history record
+      description: Allows uploading an image to an existing clinical history record.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the clinical history record.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The image file to upload.
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Image uploaded successfully
+                  imageUrl:
+                    type: string
+                    description: URL of the uploaded image.
+        '400':
+          description: Bad Request - Missing required headers or Clinical History ID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: clinicalHistoryId is required
+        '404':
+          description: Clinical History record not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Clinical history not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error occurred.
+  /histories/{id}/image/{imageId}:
+    delete:
+      summary: Delete an image from a clinical history record
+      description: Deletes a specific image associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the clinical history record.
+          schema:
+            type: string
+        - name: imageId
+          in: path
+          required: true
+          description: The ID of the image to delete.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Image deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Image deleted successfully
+        '400':
+          description: Bad Request - Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: clinicalHistoryId and imageId are required
+        '404':
+          description: Not Found - Clinical history or image not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Clinical history or image not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error deleting image
+                  error:
+                    type: string
+                    example: Detailed error message.
+  /histories/{id}/analytic:
+    post:
+      summary: Upload an analytic to a clinical history record
+      description: Allows uploading an analytic to an existing clinical history record.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the clinical history record.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The analytic file to upload.
+      responses:
+        '201':
+          description: Analytic uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Analytic uploaded successfully
+                  analyticUrl:
+                    type: string
+                    description: URL of the uploaded analytic.
+        '400':
+          description: Bad Request - Missing required headers or Clinical History ID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: clinicalHistoryId is required
+        '404':
+          description: Clinical History record not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Clinical history not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error occurred.
+  /histories/{id}/analytic/{analyticId}:
+    delete:
+      summary: Delete an analytic from a clinical history record
+      description: Deletes a specific analytic associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the clinical history record.
+          schema:
+            type: string
+        - name: analyticId
+          in: path
+          required: true
+          description: The ID of the analytic to delete.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analytic deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Analytic deleted successfully
+        '400':
+          description: Bad Request - Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: clinicalHistoryId and analyticId are required
+        '404':
+          description: Not Found - Clinical history or analytic not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Clinical history or analytic not found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error deleting analytic
+                  error:
+                    type: string
+                    example: Detailed error message.
 components:
-  # Aquí irán tus componentes reutilizables
+  schemas:
+    ClinicalHistory:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        treatments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Treatment'
+        currentConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CurrentCondition'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        analytics:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateClinicalHistory:
+      type: object
+      properties:
+        patientId:
+          type: string
+      required:
+        - patientId
+    Treatment:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the treatment
+        startDate:
+          type: string
+          format: date
+          description: Start date of the treatment
+        endDate:
+          type: string
+          format: date
+          description: End date of the treatment
+        instructions:
+          type: string
+          description: Instructions for the treatment
+      required:
+        - name
+        - endDate
+        - instructions
+    CurrentCondition:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the current condition
+        details:
+          type: string
+          description: Additional details about the current condition
+        since:
+          type: string
+          format: date
+          description: When the condition started
+      required:
+        - name
+        - details
+    File:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the file
+        originalName:
+          type: string
+          description: Original name of the file
+        url:
+          type: string
+          description: URL of the file
+        date:
+          type: string
+          format: date-time
+          description: Date the file was uploaded
