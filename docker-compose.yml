@@ -11,7 +11,12 @@ services:
       - api-gateway
     ports:
       - "8080:8080"
+    volumes:
+      - api-gateway-data:/app
 
 networks:
   api-gateway:
     driver: bridge
+
+volumes:
+  api-gateway-data:
