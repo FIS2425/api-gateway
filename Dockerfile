@@ -22,5 +22,5 @@ WORKDIR /app
 COPY --from=builder /api-gateway/target/release/hypergate /app/hypergate
 COPY --from=builder /api-gateway/static/openapi.yaml /app/static/openapi.yaml
 COPY --from=builder /api-gateway/static/openapi.html /app/static/openapi.html
-COPY --from=builder /api-gateway/config.yaml /app/config.yaml
+COPY --from=builder /api-gateway/config.yaml.prod /app/config.yaml
 CMD ["/app/hypergate", "serve", "--conf", "/app/config.yaml", "--specs", "/app/static/openapi.yaml", "--html", "/app/static/openapi.html"]
