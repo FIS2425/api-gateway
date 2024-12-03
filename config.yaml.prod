@@ -1,11 +1,8 @@
 ---
 api_gateway_url: "0.0.0.0:8080"
 is_https: false
-authorization_api_url: "http://authorization-svc:3001/api/v1/validate"
+authorization_api_url: "http://authorization-svc:3001/api/v1/token/validate"
 services:
-  - path: "/api/v1/validate"
-    target_service: "http://authorization-svc"
-    target_port: "3001"
   - path: "/api/v1/login"
     target_service: "http://authorization-svc"
     target_port: "3001"
@@ -19,6 +16,8 @@ endpoints_without_auth:
   - endpoint: "/api/v1/users/verify-2fa"
     method: "POST"
   - endpoint: "/api/v1/login"
+    method: "POST"
+  - endpoint: "/api/v1/token/refresh"
     method: "POST"
 logger_config:
   use_kafka: true # If false, delete also kafka_host

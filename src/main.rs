@@ -1,16 +1,17 @@
 mod config;
+mod utils;
 
 use clap::{Arg, Command};
 use config::logger::Logger;
 use config::openapi::OpenApiMerger;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
-use http_body_util::{BodyExt, Full};
+use http_body_util::BodyExt;
 use hyper::body::{Bytes, Incoming};
 use hyper::header::HeaderValue;
 use hyper::http::request::Parts;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
-use hyper::{Request, Response, StatusCode};
+use hyper::{Method, Request, Response, StatusCode};
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use iptools::ipv4;
@@ -21,13 +22,13 @@ use std::net::SocketAddr;
 use std::result::Result;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use utils::http::{full, BoxBody, CorsResponse};
 use uuid::Uuid;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
-type BoxBody = http_body_util::combinators::BoxBody<Bytes, hyper::Error>;
 
 #[tokio::main]
-async fn main() -> () {
+async fn main() {
     let matches = Command::new("HyperGate")
         .version("0.1.0")
         .author("@adrrf @AntonioRodriguezRuiz @alvarobernal2412")
@@ -194,6 +195,14 @@ async fn handle_request(
     openapi_path: &str,
     html_path: &str,
 ) -> Result<Response<BoxBody>, GenericError> {
+    if req.method() == Method::OPTIONS {
+        let response = CorsResponse::builder()
+            .status(StatusCode::NO_CONTENT)
+            .body(full(Bytes::new()))
+            .unwrap();
+        return Ok(response);
+    }
+
     let path = req.uri().path();
 
     match path {
@@ -294,7 +303,7 @@ async fn handle_request(
 async fn serve_openapi_spec(openapi_path: &str) -> Result<Response<BoxBody>, GenericError> {
     match tokio::fs::read_to_string(openapi_path).await {
         Ok(content) => {
-            let response = Response::builder()
+            let response = CorsResponse::builder()
                 .status(StatusCode::OK)
                 .header("Content-Type", "application/yaml")
                 .body(full(Bytes::from(content)))
@@ -302,7 +311,7 @@ async fn serve_openapi_spec(openapi_path: &str) -> Result<Response<BoxBody>, Gen
             Ok(response)
         }
         Err(_) => {
-            let response = Response::builder()
+            let response = CorsResponse::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body(full(Bytes::from("OpenAPI Specification Not Found")))
                 .unwrap();
@@ -314,7 +323,7 @@ async fn serve_openapi_spec(openapi_path: &str) -> Result<Response<BoxBody>, Gen
 async fn serve_swagger_ui(html_path: &str) -> Result<Response<BoxBody>, GenericError> {
     match tokio::fs::read_to_string(&html_path).await {
         Ok(content) => {
-            let response = Response::builder()
+            let response = CorsResponse::builder()
                 .status(StatusCode::OK)
                 .header("Content-Type", "text/html")
                 .body(full(Bytes::from(content)))
@@ -322,7 +331,7 @@ async fn serve_swagger_ui(html_path: &str) -> Result<Response<BoxBody>, GenericE
             Ok(response)
         }
         Err(_) => {
-            let response = Response::builder()
+            let response = CorsResponse::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body(full(Bytes::from("Swagger UI Not Found")))
                 .unwrap();
@@ -404,14 +413,14 @@ async fn forward_request(req: Request<BoxBody>) -> Result<Response<BoxBody>, ()>
     {
         Ok(res) => {
             let (parts, body) = res.into_parts();
-            Ok(Response::from_parts(parts, body.boxed()))
+            Ok(CorsResponse::from_parts(parts, body))
         }
         Err(_) => Err(()),
     }
 }
 
 fn not_found() -> Result<Response<BoxBody>, GenericError> {
-    let response = Response::builder()
+    let response = CorsResponse::builder()
         .status(StatusCode::NOT_FOUND)
         .body(full(Bytes::from("Not Found")))
         .unwrap();
@@ -419,15 +428,9 @@ fn not_found() -> Result<Response<BoxBody>, GenericError> {
 }
 
 fn service_unavailable<T: Into<Bytes>>(reason: T) -> Result<Response<BoxBody>, GenericError> {
-    let response = Response::builder()
+    let response = CorsResponse::builder()
         .status(StatusCode::SERVICE_UNAVAILABLE)
         .body(full(reason))
         .unwrap();
     Ok(response)
-}
-
-fn full<T: Into<Bytes>>(chunk: T) -> BoxBody {
-    Full::new(chunk.into())
-        .map_err(|never| match never {})
-        .boxed()
 }

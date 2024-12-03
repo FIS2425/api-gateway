@@ -23,8 +23,9 @@ spec:
         io.kompose.service: api-gateway
     spec:
       containers:
-        - image: ghcr.io/fis2425/api-gateway:latest
+        - image: ghcr.io/fis2425/api-gateway:pr.40
           name: api-gateway
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
               protocol: TCP
