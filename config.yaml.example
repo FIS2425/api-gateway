@@ -1,18 +1,31 @@
 ---
 api_gateway_url: "0.0.0.0:8080"
 is_https: false
-authorization_api_url: "http://localhost:3001/auth/api/v1/validate"
+authorization_api_url: "http://localhost:3001/auth/api/v1/token/validate"
 services:
-  - path: "/auth/api/v1"
-    target_service: "http://localhost"
+  - path: "/api/v1/login"
+    target_service: "http://authorization-svc"
+    target_port: "3001"
+  - path: "/api/v1/logout"
+    target_service: "http://authorization-svc"
+    target_port: "3001"
+  - path: "/api/v1/token"
+    target_service: "http://authorization-svc"
+    target_port: "3001"
+  - path: "/api/v1/users"
+    target_service: "http://authorization-svc"
     target_port: "3001"
 endpoints_without_auth:
-  - endpoint: "/auth/api/v1/login"
+  - endpoint: "/api/v1/users/verify-2fa"
+    method: "POST"
+  - endpoint: "/api/v1/login"
+    method: "POST"
+  - endpoint: "/api/v1/token/refresh"
     method: "POST"
 logger_config:
   use_kafka: true # If false, delete also kafka_host
-  kafka_host: "localhost:9092"
-  kafka_topic: "microservice-logs"
+  kafka_host: "kafka-logger:9092"
+  kafka_topic: "gateway-logs"
   out_file: "logs/out.log"
   err_file: "logs/err.log"
   debug_file: "logs/debug.log"
