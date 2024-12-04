@@ -23,7 +23,7 @@ spec:
         io.kompose.service: api-gateway
     spec:
       containers:
-        - image: ghcr.io/fis2425/api-gateway:pr.40
+        - image: ghcr.io/fis2425/api-gateway:latest
           name: api-gateway
           imagePullPolicy: Always
           ports:
