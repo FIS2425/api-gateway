@@ -25,6 +25,7 @@ spec:
       containers:
         - image: ghcr.io/fis2425/api-gateway:latest
           name: api-gateway
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
               protocol: TCP

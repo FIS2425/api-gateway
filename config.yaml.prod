@@ -1,7 +1,7 @@
 ---
 api_gateway_url: "0.0.0.0:8080"
 is_https: false
-authorization_api_url: "http://localhost:3001/auth/api/v1/token/validate"
+authorization_api_url: "http://authorization-svc:3001/api/v1/token/validate"
 services:
   - path: "/api/v1/login"
     target_service: "http://authorization-svc"

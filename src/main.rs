@@ -1,18 +1,20 @@
 mod config;
+mod utils;
 
 use clap::{Arg, Command};
 use config::logger::Logger;
 use config::openapi::OpenApiMerger;
 use config::parser::{load_config, GatewayConfig, NoAuthEndpoints, ServiceConfig};
-use http_body_util::{BodyExt, Full};
+use http_body_util::BodyExt;
 use hyper::body::{Bytes, Incoming};
 use hyper::header::HeaderValue;
+use hyper::header::CONTENT_TYPE;
 use hyper::http::request::Parts;
 use hyper::server::conn::http1;
-use hyper::service::service_fn;
-use hyper::{Request, Response, StatusCode};
+use hyper::{Method, Request, Response, StatusCode};
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
+use hyper_util::service::TowerToHyperService;
 use iptools::ipv4;
 use iptools::ipv6;
 use openapiv3::OpenAPI;
@@ -21,13 +23,15 @@ use std::net::SocketAddr;
 use std::result::Result;
 use std::sync::Arc;
 use tokio::net::TcpListener;
+use tower::ServiceBuilder;
+use tower_http::cors::{AllowOrigin, CorsLayer};
+use utils::http::{full, BoxBody};
 use uuid::Uuid;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
-type BoxBody = http_body_util::combinators::BoxBody<Bytes, hyper::Error>;
 
 #[tokio::main]
-async fn main() -> () {
+async fn main() {
     let matches = Command::new("HyperGate")
         .version("0.1.0")
         .author("@adrrf @AntonioRodriguezRuiz @alvarobernal2412")
@@ -132,6 +136,18 @@ async fn api_gateway(
     );
     let listener = TcpListener::bind(&config.api_gateway_url).await?;
 
+    let cors = CorsLayer::new()
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::OPTIONS,
+            Method::PUT,
+            Method::DELETE,
+        ])
+        .allow_origin(AllowOrigin::mirror_request())
+        .allow_headers([CONTENT_TYPE])
+        .allow_credentials(true);
+
     loop {
         // Accept incoming connections
         let (stream, conn_addr) = listener.accept().await?;
@@ -140,11 +156,13 @@ async fn api_gateway(
         let logger = logger.clone();
         let html = html_path.to_string();
         let spec = openapi_spec.to_string();
+        let cors = cors.clone();
 
         tokio::task::spawn(async move {
             let request_id = Uuid::new_v4().to_string();
             let html = &html;
             let spec = &spec;
+            let cors = cors.clone();
 
             logger.info(
                 "New connection",
@@ -153,7 +171,8 @@ async fn api_gateway(
                     ("ip", conn_addr.ip().to_string().as_str()),
                 ],
             );
-            let service = service_fn(move |req| {
+
+            let service = ServiceBuilder::new().layer(cors).service_fn(move |req| {
                 handle_request(
                     req,
                     conn_addr,
@@ -164,6 +183,7 @@ async fn api_gateway(
                     html,
                 )
             });
+            let service = TowerToHyperService::new(service);
 
             if let Err(err) = http1::Builder::new().serve_connection(io, service).await {
                 println!("Failed to serve connection: {:?}", err);
@@ -194,6 +214,14 @@ async fn handle_request(
     openapi_path: &str,
     html_path: &str,
 ) -> Result<Response<BoxBody>, GenericError> {
+    if req.method() == Method::OPTIONS {
+        let response = Response::builder()
+            .status(StatusCode::NO_CONTENT)
+            .body(full(Bytes::new()))
+            .unwrap();
+        return Ok(response);
+    }
+
     let path = req.uri().path();
 
     match path {
@@ -424,10 +452,4 @@ fn service_unavailable<T: Into<Bytes>>(reason: T) -> Result<Response<BoxBody>, G
         .body(full(reason))
         .unwrap();
     Ok(response)
-}
-
-fn full<T: Into<Bytes>>(chunk: T) -> BoxBody {
-    Full::new(chunk.into())
-        .map_err(|never| match never {})
-        .boxed()
 }

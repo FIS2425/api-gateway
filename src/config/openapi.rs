@@ -61,7 +61,7 @@ impl OpenApiMerger {
             ..Default::default()
         };
 
-        for (_service, spec) in &self.specs {
+        for spec in self.specs.values() {
             let server_url = spec.servers.first().unwrap().url.clone();
             let uri = Uri::try_from(server_url).unwrap();
             let mut server_path = uri.path().to_string();
