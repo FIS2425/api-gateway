@@ -1,14 +1,226 @@
 openapi: 3.0.0
 info:
-  title: Microservicio Template
+  title: Patient Microservice
   version: 1.0.0
-  description: Template para microservicios
-
+  description: >
+    Patient microservice for managing patient data within the Clinic Management System.
+    Supports registration, retrieval, updating, and deletion of patient information.
 servers:
-  - url: http://localhost:3001
+  - url: /api/v1
+
+security:
+  - cookieAuth: []
+
+tags:
+  - name: Patients
+    description: Operations related to patient management.
 
 paths:
-  # Aquí irán tus rutas
+  /patients/:
+    post:
+      tags:
+        - Patients
+      summary: Register a new patient
+      description: Creates a new patient record in the system.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '201':
+          description: Patient created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          description: Missing fields in the request body.
+          content:
+            application/json:
+              example:
+                message: "Missing fields"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                message: "An unexpected error occurred"
+
+    get:
+      tags:
+        - Patients
+      summary: Retrieve all patients
+      description: Fetch a list of all patients.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of patients retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Patient'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                message: "An unexpected error occurred"
+
+  /patients/{id}:
+    get:
+      tags:
+        - Patients
+      summary: Get patient by ID
+      description: Fetch a specific patient using their unique ID.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patient retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found.
+          content:
+            application/json:
+              example:
+                message: "Patient not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                message: "An unexpected error occurred"
+
+    put:
+      tags:
+        - Patients
+      summary: Update a patient by ID
+      description: Modify the details of a specific patient.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Patient updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found.
+          content:
+            application/json:
+              example:
+                message: "Patient not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                message: "An unexpected error occurred"
+
+    delete:
+      tags:
+        - Patients
+      summary: Delete a patient by ID
+      description: Remove a specific patient from the system.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patient deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '404':
+          description: Patient not found.
+          content:
+            application/json:
+              example:
+                message: "Patient not found"
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              example:
+                message: "An unexpected error occurred"
 
 components:
-  # Aquí irán tus componentes reutilizables
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the patient.
+        name:
+          type: string
+        surname:
+          type: string
+        birthdate:
+          type: string
+          format: date
+        dni:
+          type: string
+        city:
+          type: string
+        clinicHistoryId:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+      required:
+        - name
+        - surname
+        - birthdate
+        - dni
+        - city
+        - clinicHistoryId
+        - username
+        - email
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string

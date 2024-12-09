@@ -1,14 +1,168 @@
 openapi: 3.0.0
 info:
-  title: Microservicio Template
+  title: Staff Service
   version: 1.0.0
-  description: Template para microservicios
+  description: API to manage doctors in a clinic
 
 servers:
   - url: http://localhost:3001
+    description: Local server
+
+tags:
+  - name: staff
+    description: Operations about doctors
 
 paths:
-  # Aquí irán tus rutas
+  /staff/register:
+    post:
+      summary: Register a new doctor
+      tags:
+        - staff
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                surname:
+                  type: string
+                specialty:
+                  type: string
+                dni:
+                  type: string
+                clinicId:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '201':
+          description: Doctor created successfully
+        '400':
+          description: Bad request
 
-components:
-  # Aquí irán tus componentes reutilizables
+  /staff/{doctorId}:
+    get:
+      summary: Get doctor by ID
+      tags:
+        - staff
+      parameters:
+        - in: path
+          name: doctorId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Doctor retrieved successfully
+        '404':
+          description: Doctor not found
+
+    put:
+      summary: Update doctor speciality
+      tags:
+        - staff
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: doctorId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                specialty:
+                  type: string
+      responses:
+        '200':
+          description: Speciality updated successfully
+        '404':
+          description: Doctor not found
+
+    delete:
+      summary: Delete a doctor
+      tags:
+        - staff
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: doctorId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Doctor deleted successfully
+        '404':
+          description: Doctor not found
+
+  /staff/clinic/{clinicId}/speciality/{speciality}:
+    get:
+      summary: Get doctors by speciality in a clinic
+      tags:
+        - staff
+      parameters:
+        - in: path
+          name: clinicId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: speciality
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of doctors
+        '404':
+          description: No doctors found
+
+  /staff/me:
+    get:
+      summary: Get authenticated doctor
+      tags:
+        - staff
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Authenticated doctor retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  name:
+                    type: string
+                  surname:
+                    type: string
+                  specialty:
+                    type: string
+                  dni:
+                    type: string
+                  clinicId:
+                    type: string
+                  email:
+                    type: string
+                  userId:
+                    type: string
+        '404':
+          description: Authenticated doctor not found
+        '400':
+          description: Error retrieving authenticated doctor
