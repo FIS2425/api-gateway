@@ -1,0 +1,62 @@
+name: 🔀OpenAPI - Axios Client
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout ⬇️
+        uses: actions/checkout@v4.2.2
+        with:
+          show-progress: false
+
+      - name: Cache Dependencies 📦
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Copy Config File 📄
+        run: cp config.yaml.example config.yaml
+
+      - name: Build  🛠️
+        run: cargo build --verbose
+
+      - name: Generate OpenAPI Spec 📜
+        run: cargo run -- merge --url 'http://0.0.0.0:8080' --specs './docs/' --output './static/openapi.html'
+
+      - name: Check if the schema was modified 🧐
+        id: diff
+        run: echo '::set-output name=diff::$(git status -su | grep static/openapi.yaml | wc -l)'
+
+      - name: Commit changes 📤
+        if: ${{ steps.diff.outputs.diff != '0' && github.event_name == 'push' }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update openapi shema🔄" && git push)
+
+      - name: Dispatch event to Axios Client 🚀
+        uses: convictional/trigger-workflow-and-wait@v1.6.5
+        with:
+          owner: fis2425
+          repo: apiclient
+          github_token: ${{ secrets.DISPATCH_TOKEN }}
+          workflow_file_name: generation.yml
+          ref: main
+          wait_workflow: false
