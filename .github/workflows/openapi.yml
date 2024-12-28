@@ -41,15 +41,17 @@ jobs:
 
       - name: Check if the schema was modified 🧐
         id: diff
-        run: echo '::set-output name=diff::$(git status -su | grep static/openapi.yaml | wc -l)'
+        run: |
+          diff=$(git status -su | grep static/openapi.yaml | wc -l)
+          echo "diff=$diff" >> $GITHUB_ENV
 
       - name: Commit changes 📤
-        if: ${{ steps.diff.outputs.diff != '0' && github.event_name == 'push' }}
+        if: ${{ env.diff != '0' && github.event_name == 'push' }}
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update openapi shema🔄" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update openapi schema 🔄" && git push)
 
       - name: Dispatch event to Axios Client 🚀
         uses: convictional/trigger-workflow-and-wait@v1.6.5
