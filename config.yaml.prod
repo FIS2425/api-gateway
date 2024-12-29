@@ -18,6 +18,12 @@ services:
   - path: "/api/v1/staff"
     target_service: "http://staff-svc"
     target_port: "3007"
+  - path: "/api/v1/workshifts"
+    target_service: "http://workshift"
+    target_port: "3011"
+  - path: "/api/v1/appointments"
+    target_service: "http://appointment"
+    target_port: "3012"
 endpoints_without_auth:
   - endpoint: "/api/v1/users/verify-2fa"
     method: "POST"
