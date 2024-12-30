@@ -36,7 +36,7 @@
     "groupName": "vulnerable",
     "labels": ["🔒 Security", "📦 Dependencies"]
   },
-  "ignoreDeps": ["cargo", "rust"],
+  "ignoreDeps": ["cargo", "rust", "tower"],
   "enabledManagers": ["cargo", "github-actions"],
   "labels": ["📦 Dependencies"],
   "rebaseWhen": "behind-base-branch",
