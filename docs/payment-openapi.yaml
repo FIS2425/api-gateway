@@ -4,416 +4,263 @@ info:
   version: 1.0.0
   description: API for managing clinics, plans, and payments.
 servers:
-  - url: http://localhost:3003
-    description: Local server
-
+  - url: /api/v1
+  
+tags:
+  - name: Clinic
+    description: Operations related to clinics
+  - name: Payment
+    description: Operations related to payments
+  - name: Plan
+    description: Operations related to plans
 paths:
-  # Payment Endpoints
-  /payment:
-    post:
-      summary: Process a payment
-      description: Endpoint to process a payment, save the payment data, and activate the clinic.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                clinicId:
-                  type: string
-                  description: ID of the clinic making the payment.
-                  example: "648af2e3d8e9d9c06f76c8c3"
-                planId:
-                  type: string
-                  description: ID of the plan being paid for.
-                  example: "752fc4a5b7a4c7bfe8366d34"
-                
+  /plans:
+    get:
+      tags:
+        - Plan
+      summary: Retrieve all plans
       responses:
         '200':
-          description: Payment processed successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Payment successful
-                  paymentIntent:
-                    type: object
-                    description: Information about the payment intent created by Stripe.
-        '400':
-          description: Error processing payment.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Error processing payment: invalid payment method."
-        '404':
-          description: Plan not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Plan not found"
-
-  /getPaymentById/{id}:
-    get:
-      summary: Get a payment by ID
-      description: Retrieve a specific payment by its unique ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the payment
-          example: "550e8400-e29b-41d4-a716-446655440000"
-      responses:
-        200:
-          description: Payment found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-        404:
-          description: Payment not found
-
-  /registerPayment:
-    post:
-      summary: Register a new payment
-      description: Creates a new payment and saves it in the database.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - date
-                - clinicId
-                - status
-                - planId
-              properties:
-                date:
-                  type: string
-                  format: date-time
-                  description: Date of the payment
-                  example: "2023-11-16T10:15:00.000Z"
-                clinicId:
-                  type: string
-                  description: UUID of the clinic
-                  example: "123e4567-e89b-12d3-a456-426614174000"
-                status:
-                  type: string
-                  enum: ["Pending", "Completed", "Failed"]
-                  description: Status of the payment
-                  example: "Pending"
-                planId:
-                  type: string
-                  description: UUID of the plan
-                  example: "789e1234-e89b-12d3-a456-426614174001"
-      responses:
-        201:
-          description: Payment successfully created
-        400:
-          description: Invalid input data
-
-  /obtainAllPayments:
-    get:
-      summary: Retrieve all payments
-      description: Returns a list of all registered payments.
-      responses:
-        200:
-          description: List of payments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
-
-  /deletePayment/{id}:
-    delete:
-      summary: Delete a payment by ID
-      description: Deletes a specific payment by its unique ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the payment
-          example: "550e8400-e29b-41d4-a716-446655440000"
-      responses:
-        204:
-          description: Payment successfully deleted
-        404:
-          description: Payment not found
-
-  # Plan Endpoints
-  /obtainAllPlans:
-    get:
-      summary: Retrieve all plans
-      description: Returns a list of all registered plans.
-      responses:
-        200:
-          description: List of plans
+          description: A list of plans
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Plan'
-
-  # Clinic Endpoints
-  /registerClinic:
+              examples:
+                example1:
+                  value: 
+                    - id: "1"
+                      name: "Basic Plan"
+                      price: 10.0
+                      features:
+                        - "Feature A"
+                        - "Feature B"
+  /payments:
+    get:
+      tags:
+        - Payment
+      summary: Retrieve all payments
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
     post:
-      summary: Register a new clinic
-      description: Creates a new clinic and saves it in the database.
+      security:
+        - cookieAuth: []
+      tags:
+        - Payment
+      summary: Process a new payment
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - name
-                - city
-                - district
-                - plan
-                - active
-                - postalCode
-                - countryCode
-              properties:
-                name:
-                  type: string
-                  description: Name of the clinic
-                  example: "San Juan Clinic"
-                city:
-                  type: string
-                  description: City where the clinic is located
-                  example: "Barcelona"
-                district:
-                  type: string
-                  description: District of the clinic
-                  example: "Eixample"
-                plan:
-                  type: string
-                  description: Subscription plan of the clinic
-                  example: "Premium"
-                active:
-                  type: boolean
-                  description: Status of the clinic
-                  example: true
-                postalCode:
-                  type: string
-                  description: Postal code of the clinic
-                  example: "08001"
-                countryCode:
-                  type: string
-                  description: ISO 3166-1 alpha-2 country code
-                  example: "ES"
+              $ref: '#/components/schemas/PaymentRequest'
       responses:
-        201:
-          description: Clinic successfully created
-        400:
-          description: Invalid input data
-
-  /obtainAllClinic:
+        '201':
+          description: Payment successfully processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+  /payments/{id}:
     get:
-      summary: Retrieve all clinics
-      description: Returns a list of all registered clinics.
+      tags:
+        - Payment
+      summary: Retrieve a payment by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        200:
-          description: List of clinics
+        '200':
+          description: Details of a specific payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+  /clinics:
+    post:
+      tags:
+        - Clinic
+      security:
+        - cookieAuth: []
+      summary: Register a new clinic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+      responses:
+        '201':
+          description: Clinic successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+    get:
+      tags:
+        - Clinic
+      summary: Retrieve all clinics
+      responses:
+        '200':
+          description: A list of clinics
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Clinic'
-
-  /deleteClinic/{id}:
-    delete:
-      summary: Delete a clinic by ID
-      description: Deletes a specific clinic by its unique ID.
+  /clinics/{id}:
+    get:
+      tags:
+        - Clinic
+      summary: Retrieve a clinic by ID
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: string
-          description: Unique identifier of the clinic
-          example: "64c9c124f1a2a8b4dcd72e8d"
       responses:
-        204:
-          description: Clinic successfully deleted
-        404:
+        '200':
+          description: Details of a specific clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+        '404':
           description: Clinic not found
-
-  /updateClinic/{id}:
-    put:
-      summary: Update a clinic by ID
-      description: Updates a clinic's details based on its unique ID.
+    delete:
+      tags:
+        - Clinic
+      summary: Delete a clinic by ID
+      security:
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: string
-            description: Unique identifier of the clinic
-            example: "64c9c124f1a2a8b4dcd72e8d"
+      responses:
+        '204':
+          description: Clinic successfully deleted
+    put:
+      tags:
+        - Clinic
+      summary: Update a clinic by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: Updated name of the clinic
-                  example: "Updated Clinic"
-                city:
-                  type: string
-                  description: Updated city where the clinic is located
-                  example: "Madrid"
-                district:
-                  type: string
-                  description: Updated district of the clinic
-                  example: "Centro"
-                plan:
-                  type: string
-                  description: Updated subscription plan of the clinic
-                  example: "Basic"
-                active:
-                  type: boolean
-                  description: Updated status of the clinic
-                  example: false
-                postalCode:
-                  type: string
-                  description: Updated postal code of the clinic
-                  example: "28001"
-                countryCode:
-                  type: string
-                  description: Updated ISO 3166-1 alpha-2 country code
-                  example: "ES"
+              $ref: '#/components/schemas/ClinicRequest'
       responses:
-        200:
+        '200':
           description: Clinic successfully updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Clinic'
-              example:
-                id: "64c9c124f1a2a8b4dcd72e8d"
-                name: "Updated Clinic"
-                city: "Madrid"
-                district: "Centro"
-                plan: "Basic"
-                active: false
-                postalCode: "28001"
-                countryCode: "ES"
-        400:
-          description: Invalid input data
-        404:
-          description: Clinic not found
-
-  /getClinicById/{id}:
-    get:
-      summary: Get a clinic by ID
-      description: Retrieve a specific clinic by its unique ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Unique identifier of the clinic
-          example: "64c9c124f1a2a8b4dcd72e8d"
-      responses:
-        200:
-          description: Clinic found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-        404:
-          description: Clinic not found
-
 components:
   schemas:
-    Payment:
-      type: object
-      properties:
-        _id:
-          type: string
-          description: Unique identifier for the payment
-        date:
-          type: string
-          format: date-time
-          description: Date of the payment
-        clinicId:
-          type: string
-          description: UUID of the clinic associated with the payment
-        status:
-          type: string
-          enum: ["Pending", "Completed", "Failed"]
-          description: Status of the payment
-        planId:
-          type: string
-          description: UUID of the plan associated with the payment
-
     Clinic:
       type: object
       properties:
-        _id:
+        id:
           type: string
-          description: Unique identifier for the clinic
         name:
           type: string
-          description: Name of the clinic
         city:
           type: string
-          description: City where the clinic is located
         district:
           type: string
-          description: District of the clinic
         plan:
           type: string
-          description: Subscription plan of the clinic
         active:
           type: boolean
-          description: Status of the clinic
         postalCode:
           type: string
-          description: Postal code of the clinic
         countryCode:
           type: string
-          description: ISO 3166-1 alpha-2 country code
-
+    ClinicRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        clinicId:
+          type: string
+        status:
+          type: string
+        planId:
+          type: string
+    PaymentRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+        clinicId:
+          type: string
     Plan:
       type: object
       properties:
-        _id:
+        id:
           type: string
-          description: Unique identifier for the plan
         name:
           type: string
-          description: Name of the plan
         price:
           type: number
-          description: Price of the plan
         features:
           type: array
           items:
             type: string
-          description: List of features included in the plan
+  securitySchemes:
+    cookieAuth:
+        type: apiKey
+        in: cookie
+        name: token

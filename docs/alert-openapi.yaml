@@ -8,7 +8,70 @@ servers:
   - url: http://localhost:3001
 
 paths:
-  # Aquí irán tus rutas
+  /alert/alert-appointment:
+    post:
+      summary: Enviar alerta de cita médica
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                clinic:
+                  type: string
+                dateAppointment:
+                  type: string
+                  format: date-time
+                doctorName:
+                  type: string
+      responses:
+        '200':
+        description: Correo enviado y programado exitosamente
+        content:
+          application/json:
+          schema:
+            type: object
+            properties:
+            message:
+              type: string
+              example: Email sent and scheduled successfully
+        '400':
+        description: Campos requeridos faltantes
+        content:
+          application/json:
+          schema:
+            type: object
+            properties:
+            message:
+              type: string
+              example: Missing required fields
+        '500':
+        description: Error interno del servidor
+        content:
+          application/json:
+          schema:
+            type: object
+            properties:
+            message:
+              type: string
+              example: Failed to send email
+        '503':
+        description: Servicio de correo temporalmente no disponible
+        content:
+          application/json:
+          schema:
+            type: object
+            properties:
+            fallback:
+              type: boolean
+              example: true
+            message:
+              type: string
+              example: Email service temporarily unavailable. Please try again later.
 
 components:
   # Aquí irán tus componentes reutilizables
