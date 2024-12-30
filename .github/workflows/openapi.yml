@@ -19,6 +19,7 @@ jobs:
       - name: Checkout ⬇️
         uses: actions/checkout@v4.2.2
         with:
+          ref: main
           show-progress: false
 
       - name: Cache Dependencies 📦
@@ -37,16 +38,9 @@ jobs:
         run: cargo build --verbose
 
       - name: Generate OpenAPI Spec 📜
-        run: cargo run -- merge --url 'http://0.0.0.0:8080' --specs './docs/' --output './static/openapi.html'
-
-      - name: Check if the schema was modified 🧐
-        id: diff
-        run: |
-          diff=$(git status -su | grep static/openapi.yaml | wc -l)
-          echo "diff=$diff" >> $GITHUB_ENV
+        run: cargo run -- merge --url 'http://0.0.0.0:8080' --specs './docs/' --output './static/openapi.yaml'
 
       - name: Commit changes 📤
-        if: ${{ env.diff != '0' && github.event_name == 'push' }}
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
