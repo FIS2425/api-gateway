@@ -492,6 +492,9 @@ paths:
                     type: string
                     format: uri
                     example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+                  secret:
+                    type: string
+                    example: "JBSWY3DPEHPK3PXP"
         '400':
           description: Invalid request
           content:
