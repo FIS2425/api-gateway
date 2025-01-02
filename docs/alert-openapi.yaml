@@ -5,7 +5,10 @@ info:
   description: Template para microservicios
 
 servers:
-  - url: http://localhost:3001
+  - url: http://localhost:3004/api/v1
+    description: Development server
+  - url: /api/v1
+    description: Production server
 
 paths:
   /alert/alert-appointment:
