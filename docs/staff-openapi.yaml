@@ -5,8 +5,10 @@ info:
   description: API to manage doctors in a clinic
 
 servers:
-  - url: http://localhost:3001
-    description: Local server
+  - url: http://localhost:3007/api/v1
+    description: Development server
+  - url: /api/v1
+    description: Production server
 
 tags:
   - name: staff
