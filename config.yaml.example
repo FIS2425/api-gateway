@@ -15,6 +15,9 @@ services:
   - path: "/api/v1/users"
     target_service: "http://authorization-svc"
     target_port: "3001"
+  - path: "/api/v1/payments"
+    target_service: "http://payments-svc"
+    target_port: "3003"
 endpoints_without_auth:
   - endpoint: "/api/v1/users/verify-2fa"
     method: "POST"
