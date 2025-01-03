@@ -6,539 +6,6 @@ info:
 servers:
 - url: /
 paths:
-  /api/v1/staff/register:
-    post:
-      tags:
-      - staff
-      summary: Register a new doctor
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                surname:
-                  type: string
-                specialty:
-                  type: string
-                dni:
-                  type: string
-                clinicId:
-                  type: string
-                password:
-                  type: string
-                email:
-                  type: string
-        required: true
-      responses:
-        '201':
-          description: Doctor created successfully
-        '400':
-          description: Bad request
-      security:
-      - cookieAuth: []
-  /api/v1/staff/{doctorId}:
-    get:
-      tags:
-      - staff
-      summary: Get doctor by ID
-      parameters:
-      - in: path
-        name: doctorId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Doctor retrieved successfully
-        '404':
-          description: Doctor not found
-    put:
-      tags:
-      - staff
-      summary: Update doctor speciality
-      parameters:
-      - in: path
-        name: doctorId
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                specialty:
-                  type: string
-        required: true
-      responses:
-        '200':
-          description: Speciality updated successfully
-        '404':
-          description: Doctor not found
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - staff
-      summary: Delete a doctor
-      parameters:
-      - in: path
-        name: doctorId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Doctor deleted successfully
-        '404':
-          description: Doctor not found
-      security:
-      - cookieAuth: []
-  /api/v1/staff/clinic/{clinicId}/speciality/{speciality}:
-    get:
-      tags:
-      - staff
-      summary: Get doctors by speciality in a clinic
-      parameters:
-      - in: path
-        name: clinicId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: speciality
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of doctors
-        '404':
-          description: No doctors found
-  /api/v1/staff/me:
-    get:
-      tags:
-      - staff
-      summary: Get authenticated doctor
-      responses:
-        '200':
-          description: Authenticated doctor retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  name:
-                    type: string
-                  surname:
-                    type: string
-                  specialty:
-                    type: string
-                  dni:
-                    type: string
-                  clinicId:
-                    type: string
-                  email:
-                    type: string
-                  userId:
-                    type: string
-        '404':
-          description: Authenticated doctor not found
-        '400':
-          description: Error retrieving authenticated doctor
-      security:
-      - cookieAuth: []
-  /api/v1/appointments:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments
-      description: Retrieve a list of all appointments in the system.
-      responses:
-        '200':
-          description: List of appointments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments
-      security:
-      - cookieAuth: []
-    post:
-      tags:
-      - Appointments
-      summary: Create a new appointment
-      description: Schedule a new appointment for a patient with specified details.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppointmentCreate'
-        required: true
-      responses:
-        '201':
-          description: Appointment created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error creating the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/available:
-    get:
-      tags:
-      - Appointments
-      summary: Get available appointment slots
-      description: Retrieve available appointment slots for a specific clinic, doctor, and date.
-      parameters:
-      - in: query
-        name: clinicId
-        description: The ID of the clinic to check for available appointments
-        required: true
-        schema:
-          type: string
-        style: form
-      - in: query
-        name: doctorId
-        description: The ID of the doctor to check for available appointments
-        required: true
-        schema:
-          type: string
-        style: form
-      - in: query
-        name: date
-        description: The date to check for available appointments (in YYYY-MM-DD format)
-        required: true
-        schema:
-          type: string
-          format: date
-        style: form
-      responses:
-        '200':
-          description: List of available appointment slots
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    startTime:
-                      description: Start time of the available appointment slot
-                      type: string
-                      format: time
-                    endTime:
-                      description: End time of the available appointment slot
-                      type: string
-                      format: time
-        '500':
-          description: Error obtaining clinic appointments
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    example: Error obtaining clinic appointments
-                    type: string
-                  message:
-                    example: Detailed error message
-                    type: string
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}:
-    get:
-      tags:
-      - Appointments
-      summary: Get appointment by ID
-      description: Retrieve details of a specific appointment by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment details retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error retrieving the appointment
-      security:
-      - cookieAuth: []
-    put:
-      tags:
-      - Appointments
-      summary: Update an appointment
-      description: Modify details of an existing appointment by ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to update
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppointmentUpdate'
-        required: true
-      responses:
-        '200':
-          description: Appointment updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error updating the appointment
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - Appointments
-      summary: Delete an appointment
-      description: Remove an appointment from the system by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to delete
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Appointment deleted successfully
-                    type: string
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error deleting the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}/weather:
-    get:
-      tags:
-      - Appointments
-      summary: Get weather forecast for appointment
-      description: Retrieve weather forecast for the location and date of a specific appointment by ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment for which to retrieve weather information
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Weather forecast for the appointment date and location
-        '404':
-          description: Appointment or weather data not found
-        '500':
-          description: Error retrieving the weather information
-  /api/v1/appointments/{id}/cancel:
-    put:
-      tags:
-      - Appointments
-      summary: Cancel an appointment
-      description: Change the status of an appointment to "cancelled" by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to cancel
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment cancelled successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '400':
-          description: Appointment ID not provided
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error cancelling the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}/complete:
-    put:
-      tags:
-      - Appointments
-      summary: Complete an appointment
-      description: Change the status of an appointment to "completed" by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to complete
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '400':
-          description: Appointment ID not provided
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error completing the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}/noshow:
-    put:
-      tags:
-      - Appointments
-      summary: Mark an appointment as no_show
-      description: Change the status of an appointment to "no_show" by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to mark as no_show
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment marked as no_show successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '400':
-          description: Appointment ID not provided
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error marking appointment as no_show
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/patient/{patientId}:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments for a patient
-      description: Retrieve a list of all appointments for a specific patient by their ID.
-      parameters:
-      - in: path
-        name: patientId
-        description: The ID of the patient whose appointments to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of appointments for the patient
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments for the patient
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/doctor/{doctorId}:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments for a doctor
-      description: Retrieve a list of all appointments for a specific doctor by their ID.
-      parameters:
-      - in: path
-        name: doctorId
-        description: The ID of the doctor whose appointments to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of appointments for the doctor
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments for the doctor
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/clinic/{clinicId}:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments for a clinic
-      description: Retrieve a list of all appointments for a specific clinic by its ID.
-      parameters:
-      - in: path
-        name: clinicId
-        description: The ID of the clinic whose appointments to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of appointments for the clinic
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments for the clinic
-      security:
-      - cookieAuth: []
   /api/v1/workshifts:
     get:
       tags:
@@ -900,6 +367,158 @@ paths:
             application/json:
               example:
                 message: An unexpected error occurred
+      security:
+      - cookieAuth: []
+  /api/v1/staff/register:
+    post:
+      tags:
+      - staff
+      summary: Register a new doctor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                surname:
+                  type: string
+                specialty:
+                  type: string
+                dni:
+                  type: string
+                clinicId:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+        required: true
+      responses:
+        '201':
+          description: Doctor created successfully
+        '400':
+          description: Bad request
+      security:
+      - cookieAuth: []
+  /api/v1/staff/{doctorId}:
+    get:
+      tags:
+      - staff
+      summary: Get doctor by ID
+      parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Doctor retrieved successfully
+        '404':
+          description: Doctor not found
+    put:
+      tags:
+      - staff
+      summary: Update doctor speciality
+      parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                specialty:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: Speciality updated successfully
+        '404':
+          description: Doctor not found
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - staff
+      summary: Delete a doctor
+      parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Doctor deleted successfully
+        '404':
+          description: Doctor not found
+      security:
+      - cookieAuth: []
+  /api/v1/staff/clinic/{clinicId}/speciality/{speciality}:
+    get:
+      tags:
+      - staff
+      summary: Get doctors by speciality in a clinic
+      parameters:
+      - in: path
+        name: clinicId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: speciality
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of doctors
+        '404':
+          description: No doctors found
+  /api/v1/staff/me:
+    get:
+      tags:
+      - staff
+      summary: Get authenticated doctor
+      responses:
+        '200':
+          description: Authenticated doctor retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  name:
+                    type: string
+                  surname:
+                    type: string
+                  specialty:
+                    type: string
+                  dni:
+                    type: string
+                  clinicId:
+                    type: string
+                  email:
+                    type: string
+                  userId:
+                    type: string
+        '404':
+          description: Authenticated doctor not found
+        '400':
+          description: Error retrieving authenticated doctor
       security:
       - cookieAuth: []
   /api/v1/histories:
@@ -2371,6 +1990,387 @@ paths:
                   message:
                     example: Token expired or invalid.
                     type: string
+  /api/v1/appointments:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments
+      description: Retrieve a list of all appointments in the system.
+      responses:
+        '200':
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Appointments
+      summary: Create a new appointment
+      description: Schedule a new appointment for a patient with specified details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+        required: true
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error creating the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/available:
+    get:
+      tags:
+      - Appointments
+      summary: Get available appointment slots
+      description: Retrieve available appointment slots for a specific clinic, doctor, and date.
+      parameters:
+      - in: query
+        name: clinicId
+        description: The ID of the clinic to check for available appointments
+        required: true
+        schema:
+          type: string
+        style: form
+      - in: query
+        name: doctorId
+        description: The ID of the doctor to check for available appointments
+        required: true
+        schema:
+          type: string
+        style: form
+      - in: query
+        name: date
+        description: The date to check for available appointments (in YYYY-MM-DD format)
+        required: true
+        schema:
+          type: string
+          format: date
+        style: form
+      responses:
+        '200':
+          description: List of available appointment slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    startTime:
+                      description: Start time of the available appointment slot
+                      type: string
+                      format: time
+                    endTime:
+                      description: End time of the available appointment slot
+                      type: string
+                      format: time
+        '500':
+          description: Error obtaining clinic appointments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    example: Error obtaining clinic appointments
+                    type: string
+                  message:
+                    example: Detailed error message
+                    type: string
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}:
+    get:
+      tags:
+      - Appointments
+      summary: Get appointment by ID
+      description: Retrieve details of a specific appointment by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error retrieving the appointment
+      security:
+      - cookieAuth: []
+    put:
+      tags:
+      - Appointments
+      summary: Update an appointment
+      description: Modify details of an existing appointment by ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+        required: true
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error updating the appointment
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Appointments
+      summary: Delete an appointment
+      description: Remove an appointment from the system by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to delete
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Appointment deleted successfully
+                    type: string
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error deleting the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}/weather:
+    get:
+      tags:
+      - Appointments
+      summary: Get weather forecast for appointment
+      description: Retrieve weather forecast for the location and date of a specific appointment by ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment for which to retrieve weather information
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Weather forecast for the appointment date and location
+        '404':
+          description: Appointment or weather data not found
+        '500':
+          description: Error retrieving the weather information
+  /api/v1/appointments/{id}/cancel:
+    put:
+      tags:
+      - Appointments
+      summary: Cancel an appointment
+      description: Change the status of an appointment to "cancelled" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to cancel
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error cancelling the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}/complete:
+    put:
+      tags:
+      - Appointments
+      summary: Complete an appointment
+      description: Change the status of an appointment to "completed" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to complete
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error completing the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}/noshow:
+    put:
+      tags:
+      - Appointments
+      summary: Mark an appointment as no_show
+      description: Change the status of an appointment to "no_show" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to mark as no_show
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment marked as no_show successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error marking appointment as no_show
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/patient/{patientId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a patient
+      description: Retrieve a list of all appointments for a specific patient by their ID.
+      parameters:
+      - in: path
+        name: patientId
+        description: The ID of the patient whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the patient
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the patient
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/doctor/{doctorId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a doctor
+      description: Retrieve a list of all appointments for a specific doctor by their ID.
+      parameters:
+      - in: path
+        name: doctorId
+        description: The ID of the doctor whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the doctor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the doctor
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/clinic/{clinicId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a clinic
+      description: Retrieve a list of all appointments for a specific clinic by its ID.
+      parameters:
+      - in: path
+        name: clinicId
+        description: The ID of the clinic whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the clinic
+      security:
+      - cookieAuth: []
   /api/v1/plans:
     get:
       tags:
@@ -2550,146 +2550,6 @@ paths:
       - cookieAuth: []
 components:
   schemas:
-    Appointment:
-      type: object
-      properties:
-        id:
-          description: Unique identifier for the appointment
-          type: string
-        patientId:
-          description: ID of the patient associated with the appointment
-          type: string
-        clinicId:
-          description: ID of the clinic where the appointment is scheduled
-          type: string
-        doctorId:
-          description: ID of the doctor handling the appointment
-          type: string
-        specialty:
-          description: Medical specialty for the appointment
-          type: string
-          enum:
-          - family_medicine
-          - nursing
-          - physiotherapy
-          - gynecology
-          - pediatrics
-          - dermatology
-          - cardiology
-          - neurology
-          - orthopedics
-          - psychiatry
-          - endocrinology
-          - oncology
-          - radiology
-          - surgery
-          - ophthalmology
-          - urology
-          - anesthesiology
-          - otolaryngology
-          - gastroenterology
-          - other
-        appointmentDate:
-          description: Date and time of the appointment
-          type: string
-          format: date-time
-        status:
-          description: Current status of the appointment
-          type: string
-          enum:
-          - pending
-          - completed
-          - cancelled
-          - no_show
-        createdAt:
-          description: Appointment creation timestamp
-          type: string
-          format: date-time
-    AppointmentCreate:
-      type: object
-      properties:
-        patientId:
-          description: ID of the patient for whom the appointment is created
-          type: string
-        clinicId:
-          description: ID of the clinic where the appointment will be held
-          type: string
-        doctorId:
-          description: ID of the doctor for the appointment
-          type: string
-        specialty:
-          description: Medical specialty for the appointment
-          type: string
-          enum:
-          - family_medicine
-          - nursing
-          - physiotherapy
-          - gynecology
-          - pediatrics
-          - dermatology
-          - cardiology
-          - neurology
-          - orthopedics
-          - psychiatry
-          - endocrinology
-          - oncology
-          - radiology
-          - surgery
-          - ophthalmology
-          - urology
-          - anesthesiology
-          - otolaryngology
-          - gastroenterology
-          - other
-        appointmentDate:
-          description: Date and time of the appointment
-          type: string
-          format: date-time
-      required:
-      - patientId
-      - clinicId
-      - doctorId
-      - specialty
-      - appointmentDate
-    AppointmentUpdate:
-      type: object
-      properties:
-        specialty:
-          description: Updated medical specialty for the appointment
-          type: string
-          enum:
-          - family_medicine
-          - nursing
-          - physiotherapy
-          - gynecology
-          - pediatrics
-          - dermatology
-          - cardiology
-          - neurology
-          - orthopedics
-          - psychiatry
-          - endocrinology
-          - oncology
-          - radiology
-          - surgery
-          - ophthalmology
-          - urology
-          - anesthesiology
-          - otolaryngology
-          - gastroenterology
-          - other
-        appointmentDate:
-          description: Updated date and time of the appointment
-          type: string
-          format: date-time
-        status:
-          description: Updated status of the appointment
-          type: string
-          enum:
-          - pending
-          - completed
-          - cancelled
-          - no_show
     Workshift:
       type: object
       properties:
@@ -2910,6 +2770,146 @@ components:
       - email
       - password
       - roles
+    Appointment:
+      type: object
+      properties:
+        id:
+          description: Unique identifier for the appointment
+          type: string
+        patientId:
+          description: ID of the patient associated with the appointment
+          type: string
+        clinicId:
+          description: ID of the clinic where the appointment is scheduled
+          type: string
+        doctorId:
+          description: ID of the doctor handling the appointment
+          type: string
+        specialty:
+          description: Medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Date and time of the appointment
+          type: string
+          format: date-time
+        status:
+          description: Current status of the appointment
+          type: string
+          enum:
+          - pending
+          - completed
+          - cancelled
+          - no_show
+        createdAt:
+          description: Appointment creation timestamp
+          type: string
+          format: date-time
+    AppointmentCreate:
+      type: object
+      properties:
+        patientId:
+          description: ID of the patient for whom the appointment is created
+          type: string
+        clinicId:
+          description: ID of the clinic where the appointment will be held
+          type: string
+        doctorId:
+          description: ID of the doctor for the appointment
+          type: string
+        specialty:
+          description: Medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Date and time of the appointment
+          type: string
+          format: date-time
+      required:
+      - patientId
+      - clinicId
+      - doctorId
+      - specialty
+      - appointmentDate
+    AppointmentUpdate:
+      type: object
+      properties:
+        specialty:
+          description: Updated medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Updated date and time of the appointment
+          type: string
+          format: date-time
+        status:
+          description: Updated status of the appointment
+          type: string
+          enum:
+          - pending
+          - completed
+          - cancelled
+          - no_show
     Clinic:
       type: object
       properties:
