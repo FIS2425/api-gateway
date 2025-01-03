@@ -293,18 +293,18 @@ paths:
         - Appointments
       security:
         - cookieAuth: []
-      summary: Mark an appointment as no-show
-      description: Change the status of an appointment to "no-show" by its ID.
+      summary: Mark an appointment as no_show
+      description: Change the status of an appointment to "no_show" by its ID.
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-          description: The ID of the appointment to mark as no-show
+          description: The ID of the appointment to mark as no_show
       responses:
         '200':
-          description: Appointment marked as no-show successfully
+          description: Appointment marked as no_show successfully
           content:
             application/json:
               schema:
@@ -314,7 +314,7 @@ paths:
         '404':
           description: Appointment not found
         '500':
-          description: Error marking appointment as no-show
+          description: Error marking appointment as no_show
 
   /appointments/patient/{patientId}:
     get:
@@ -425,7 +425,7 @@ components:
         status:
           type: string
           description: Current status of the appointment
-          enum: ["pending", "completed", "cancelled", "no-show"]
+          enum: ["pending", "completed", "cancelled", "no_show"]
         createdAt:
           type: string
           format: date-time
@@ -472,7 +472,7 @@ components:
         status:
           type: string
           description: Updated status of the appointment
-          enum: ["pending", "completed", "cancelled", "no-show"]
+          enum: ["pending", "completed", "cancelled", "no_show"]
 
   securitySchemes:
     cookieAuth:

@@ -10,6 +10,8 @@ paths:
   /histories:
     get:
       summary: Get all clinical histories
+      security:
+        - jwt: []
       responses:
         '200':
           description: Returns a list of all clinical histories
@@ -23,6 +25,8 @@ paths:
           description: Error retrieving clinical histories
     post:
       summary: Create a new clinical history
+      security:
+        - jwt: []
       requestBody:
         required: true
         content:
@@ -43,6 +47,8 @@ paths:
   /histories/{id}:
     get:
       summary: Get a clinical history by its ID
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -56,10 +62,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID is required
+        '403':
+          description: Access denied
+        '404':
+          description: Clinical history not found
         '500':
           description: Error retrieving clinical history
     delete:
       summary: Delete a clinical history by its ID
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -73,9 +87,38 @@ paths:
           description: Clinical history ID is required
         '500':
           description: Error deleting clinical history
+  /histories/{id}/report:
+    get:
+      summary: Get a clinical history report by its ID
+      security:
+        - jwt: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the requested clinical history report
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Clinical history ID is required
+        '403':
+          description: Access denied
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error generating clinical history report
   /histories/patient/{patientId}:
     get:
       summary: Get a clinical history by patient ID
+      security:
+        - jwt: []
       parameters:
         - name: patientId
           in: path
@@ -89,10 +132,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Patient ID is required
+        '403':
+          description: Access denied
+        '404':
+          description: Clinical history not found
         '500':
           description: Error retrieving clinical history for patient
     delete:
       summary: Delete a clinical history by patient ID
+      security:
+        - jwt: []
       parameters:
         - name: patientId
           in: path
@@ -110,6 +161,8 @@ paths:
     post:
       summary: Add an allergy to a clinical history
       description: Adds an allergy to the allergies set in a specific clinical history.
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -174,6 +227,8 @@ paths:
     delete:
       summary: Remove an allergy from a clinical history
       description: Removes an allergy from the allergies set in a specific clinical history.
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -231,6 +286,8 @@ paths:
   /histories/{id}/treatment:
     post:
       summary: Add a new treatment to a clinical history
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -259,6 +316,8 @@ paths:
   /histories/{id}/treatment/{treatmentId}:
     delete:
       summary: Delete a treatment from a clinical history
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -285,6 +344,8 @@ paths:
           description: Error deleting treatment
     put:
       summary: Update a treatment in a clinical history
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -318,6 +379,8 @@ paths:
   /histories/{id}/condition:
     post:
       summary: Add a new current condition to a clinical history
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -346,6 +409,8 @@ paths:
   /histories/{id}/condition/{currentConditionId}:
     delete:
       summary: Delete a current condition from a clinical history
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -372,6 +437,8 @@ paths:
           description: Error deleting current condition
     put:
       summary: Update a current condition in a clinical history
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -406,6 +473,8 @@ paths:
     post:
       summary: Upload an image to a clinical history record
       description: Allows uploading an image to an existing clinical history record.
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -472,6 +541,8 @@ paths:
     delete:
       summary: Delete an image from a clinical history record
       description: Deletes a specific image associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -533,6 +604,8 @@ paths:
     post:
       summary: Upload an analytic to a clinical history record
       description: Allows uploading an analytic to an existing clinical history record.
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -599,6 +672,8 @@ paths:
     delete:
       summary: Delete an analytic from a clinical history record
       description: Deletes a specific analytic associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
+      security:
+        - jwt: []
       parameters:
         - name: id
           in: path
@@ -657,6 +732,11 @@ paths:
                     type: string
                     example: Detailed error message.
 components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     ClinicalHistory:
       type: object
@@ -728,6 +808,10 @@ components:
           type: string
           format: date
           description: When the condition started
+        until:
+          type: string
+          format: date
+          description: When the condition ended
       required:
         - name
         - details
