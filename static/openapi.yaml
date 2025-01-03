@@ -6,6 +6,931 @@ info:
 servers:
 - url: /
 paths:
+  /api/v1/histories:
+    get:
+      summary: Get all clinical histories
+      responses:
+        '200':
+          description: Returns a list of all clinical histories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClinicalHistory'
+        '500':
+          description: Error retrieving clinical histories
+      security:
+      - jwt: []
+    post:
+      summary: Create a new clinical history
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClinicalHistory'
+        required: true
+      responses:
+        '201':
+          description: Clinical history created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Patient ID is required or validation error
+        '500':
+          description: Error creating clinical history
+      security:
+      - jwt: []
+  /api/v1/histories/{id}:
+    get:
+      summary: Get a clinical history by its ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Returns the requested clinical history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID is required
+        '403':
+          description: Access denied
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error retrieving clinical history
+      security:
+      - jwt: []
+    delete:
+      summary: Delete a clinical history by its ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Clinical history deleted successfully
+        '400':
+          description: Clinical history ID is required
+        '500':
+          description: Error deleting clinical history
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/report:
+    get:
+      summary: Get a clinical history report by its ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Returns the requested clinical history report
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Clinical history ID is required
+        '403':
+          description: Access denied
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error generating clinical history report
+      security:
+      - jwt: []
+  /api/v1/histories/patient/{patientId}:
+    get:
+      summary: Get a clinical history by patient ID
+      parameters:
+      - in: path
+        name: patientId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Returns the clinical history for the requested patient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Patient ID is required
+        '403':
+          description: Access denied
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error retrieving clinical history for patient
+      security:
+      - jwt: []
+    delete:
+      summary: Delete a clinical history by patient ID
+      parameters:
+      - in: path
+        name: patientId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Clinical history for the patient deleted successfully
+        '400':
+          description: Patient ID is required
+        '500':
+          description: Error deleting clinical history for patient
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/allergy:
+    post:
+      summary: Add an allergy to a clinical history
+      description: Adds an allergy to the allergies set in a specific clinical history.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the clinical history.
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                allergy:
+                  description: The name of the allergy to add.
+                  type: string
+              required:
+              - allergy
+        required: true
+      responses:
+        '200':
+          description: Allergy successfully added to the clinical history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  allergies:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Missing clinical history ID or allergy in the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Clinical history not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error while adding the allergy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/allergy/{allergy}:
+    delete:
+      summary: Remove an allergy from a clinical history
+      description: Removes an allergy from the allergies set in a specific clinical history.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the clinical history.
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: allergy
+        description: The name of the allergy to remove.
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Allergy successfully removed from the clinical history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  allergies:
+                    type: array
+                    items:
+                      type: string
+        '400':
+          description: Missing clinical history ID or allergy in the request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Clinical history not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '500':
+          description: Internal server error while removing the allergy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/treatment:
+    post:
+      summary: Add a new treatment to a clinical history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Treatment'
+        required: true
+      responses:
+        '200':
+          description: Treatment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID is required or validation error
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error adding treatment
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/treatment/{treatmentId}:
+    put:
+      summary: Update a treatment in a clinical history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: treatmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Treatment'
+        required: true
+      responses:
+        '200':
+          description: Treatment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Treatment ID is required, or validation error
+        '404':
+          description: Clinical history or treatment not found
+        '500':
+          description: Error updating treatment
+      security:
+      - jwt: []
+    delete:
+      summary: Delete a treatment from a clinical history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: treatmentId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Treatment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Treatment ID is required
+        '404':
+          description: Clinical history or treatment not found
+        '500':
+          description: Error deleting treatment
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/condition:
+    post:
+      summary: Add a new current condition to a clinical history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentCondition'
+        required: true
+      responses:
+        '200':
+          description: Current condition added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID is required or validation error
+        '404':
+          description: Clinical history not found
+        '500':
+          description: Error adding current condition
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/condition/{currentConditionId}:
+    put:
+      summary: Update a current condition in a clinical history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: currentConditionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentCondition'
+        required: true
+      responses:
+        '200':
+          description: Current condition updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Current condition ID is required, or validation error
+        '404':
+          description: Clinical history or current condition not found
+        '500':
+          description: Error updating current condition
+      security:
+      - jwt: []
+    delete:
+      summary: Delete a current condition from a clinical history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: currentConditionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Current condition deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '400':
+          description: Clinical history ID or Current condition ID is required
+        '404':
+          description: Clinical history or current condition not found
+        '500':
+          description: Error deleting current condition
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/image:
+    post:
+      summary: Upload an image to a clinical history record
+      description: Allows uploading an image to an existing clinical history record.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the clinical history record.
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  description: The image file to upload.
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Image uploaded successfully
+                    type: string
+                  imageUrl:
+                    description: URL of the uploaded image.
+                    type: string
+        '400':
+          description: Bad Request - Missing required headers or Clinical History ID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: clinicalHistoryId is required
+                    type: string
+        '404':
+          description: Clinical History record not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Clinical history not found
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Internal server error occurred.
+                    type: string
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/image/{imageId}:
+    delete:
+      summary: Delete an image from a clinical history record
+      description: Deletes a specific image associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the clinical history record.
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: imageId
+        description: The ID of the image to delete.
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Image deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Image deleted successfully
+                    type: string
+        '400':
+          description: Bad Request - Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: clinicalHistoryId and imageId are required
+                    type: string
+        '404':
+          description: Not Found - Clinical history or image not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Clinical history or image not found
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Error deleting image
+                    type: string
+                  error:
+                    example: Detailed error message.
+                    type: string
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/analytic:
+    post:
+      summary: Upload an analytic to a clinical history record
+      description: Allows uploading an analytic to an existing clinical history record.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the clinical history record.
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  description: The analytic file to upload.
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        '201':
+          description: Analytic uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Analytic uploaded successfully
+                    type: string
+                  analyticUrl:
+                    description: URL of the uploaded analytic.
+                    type: string
+        '400':
+          description: Bad Request - Missing required headers or Clinical History ID.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: clinicalHistoryId is required
+                    type: string
+        '404':
+          description: Clinical History record not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Clinical history not found
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Internal server error occurred.
+                    type: string
+      security:
+      - jwt: []
+  /api/v1/histories/{id}/analytic/{analyticId}:
+    delete:
+      summary: Delete an analytic from a clinical history record
+      description: Deletes a specific analytic associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the clinical history record.
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: analyticId
+        description: The ID of the analytic to delete.
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Analytic deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Analytic deleted successfully
+                    type: string
+        '400':
+          description: Bad Request - Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: clinicalHistoryId and analyticId are required
+                    type: string
+        '404':
+          description: Not Found - Clinical history or analytic not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Clinical history or analytic not found
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Error deleting analytic
+                    type: string
+                  error:
+                    example: Detailed error message.
+                    type: string
+      security:
+      - jwt: []
+  /api/v1/plans:
+    get:
+      tags:
+      - Plan
+      summary: Retrieve all plans
+      responses:
+        '200':
+          description: A list of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+              examples:
+                example1:
+                  value:
+                  - features:
+                    - Feature A
+                    - Feature B
+                    id: '1'
+                    name: Basic Plan
+                    price: 10.0
+  /api/v1/payments:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve all payments
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Payment
+      summary: Process a new payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      responses:
+        '201':
+          description: Payment successfully processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+      security:
+      - cookieAuth: []
+  /api/v1/payments/{id}:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve a payment by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Details of a specific payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+      security:
+      - cookieAuth: []
+  /api/v1/clinics:
+    get:
+      tags:
+      - Clinic
+      summary: Retrieve all clinics
+      responses:
+        '200':
+          description: A list of clinics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Clinic'
+    post:
+      tags:
+      - Clinic
+      summary: Register a new clinic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+        required: true
+      responses:
+        '201':
+          description: Clinic successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+      security:
+      - cookieAuth: []
+  /api/v1/clinics/{id}:
+    get:
+      tags:
+      - Clinic
+      summary: Retrieve a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Details of a specific clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+        '404':
+          description: Clinic not found
+    put:
+      tags:
+      - Clinic
+      summary: Update a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+        required: true
+      responses:
+        '200':
+          description: Clinic successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Clinic
+      summary: Delete a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Clinic successfully deleted
+      security:
+      - cookieAuth: []
   /api/v1/patients/:
     get:
       tags:
@@ -168,7 +1093,7 @@ paths:
                 message: An unexpected error occurred
       security:
       - cookieAuth: []
-  /staff/register:
+  /api/v1/staff/register:
     post:
       tags:
       - staff
@@ -201,7 +1126,7 @@ paths:
           description: Bad request
       security:
       - cookieAuth: []
-  /staff/{doctorId}:
+  /api/v1/staff/{doctorId}:
     get:
       tags:
       - staff
@@ -263,7 +1188,7 @@ paths:
           description: Doctor not found
       security:
       - cookieAuth: []
-  /staff/clinic/{clinicId}/speciality/{speciality}:
+  /api/v1/staff/clinic/{clinicId}/speciality/{speciality}:
     get:
       tags:
       - staff
@@ -285,7 +1210,7 @@ paths:
           description: List of doctors
         '404':
           description: No doctors found
-  /staff/me:
+  /api/v1/staff/me:
     get:
       tags:
       - staff
@@ -318,6 +1243,387 @@ paths:
           description: Authenticated doctor not found
         '400':
           description: Error retrieving authenticated doctor
+      security:
+      - cookieAuth: []
+  /api/v1/appointments:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments
+      description: Retrieve a list of all appointments in the system.
+      responses:
+        '200':
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Appointments
+      summary: Create a new appointment
+      description: Schedule a new appointment for a patient with specified details.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreate'
+        required: true
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error creating the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/available:
+    get:
+      tags:
+      - Appointments
+      summary: Get available appointment slots
+      description: Retrieve available appointment slots for a specific clinic, doctor, and date.
+      parameters:
+      - in: query
+        name: clinicId
+        description: The ID of the clinic to check for available appointments
+        required: true
+        schema:
+          type: string
+        style: form
+      - in: query
+        name: doctorId
+        description: The ID of the doctor to check for available appointments
+        required: true
+        schema:
+          type: string
+        style: form
+      - in: query
+        name: date
+        description: The date to check for available appointments (in YYYY-MM-DD format)
+        required: true
+        schema:
+          type: string
+          format: date
+        style: form
+      responses:
+        '200':
+          description: List of available appointment slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    startTime:
+                      description: Start time of the available appointment slot
+                      type: string
+                      format: time
+                    endTime:
+                      description: End time of the available appointment slot
+                      type: string
+                      format: time
+        '500':
+          description: Error obtaining clinic appointments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    example: Error obtaining clinic appointments
+                    type: string
+                  message:
+                    example: Detailed error message
+                    type: string
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}:
+    get:
+      tags:
+      - Appointments
+      summary: Get appointment by ID
+      description: Retrieve details of a specific appointment by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error retrieving the appointment
+      security:
+      - cookieAuth: []
+    put:
+      tags:
+      - Appointments
+      summary: Update an appointment
+      description: Modify details of an existing appointment by ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+        required: true
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error updating the appointment
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Appointments
+      summary: Delete an appointment
+      description: Remove an appointment from the system by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to delete
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Appointment deleted successfully
+                    type: string
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error deleting the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}/weather:
+    get:
+      tags:
+      - Appointments
+      summary: Get weather forecast for appointment
+      description: Retrieve weather forecast for the location and date of a specific appointment by ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment for which to retrieve weather information
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Weather forecast for the appointment date and location
+        '404':
+          description: Appointment or weather data not found
+        '500':
+          description: Error retrieving the weather information
+  /api/v1/appointments/{id}/cancel:
+    put:
+      tags:
+      - Appointments
+      summary: Cancel an appointment
+      description: Change the status of an appointment to "cancelled" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to cancel
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error cancelling the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}/complete:
+    put:
+      tags:
+      - Appointments
+      summary: Complete an appointment
+      description: Change the status of an appointment to "completed" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to complete
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error completing the appointment
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/{id}/noshow:
+    put:
+      tags:
+      - Appointments
+      summary: Mark an appointment as no_show
+      description: Change the status of an appointment to "no_show" by its ID.
+      parameters:
+      - in: path
+        name: id
+        description: The ID of the appointment to mark as no_show
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Appointment marked as no_show successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Appointment ID not provided
+        '404':
+          description: Appointment not found
+        '500':
+          description: Error marking appointment as no_show
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/patient/{patientId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a patient
+      description: Retrieve a list of all appointments for a specific patient by their ID.
+      parameters:
+      - in: path
+        name: patientId
+        description: The ID of the patient whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the patient
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the patient
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/doctor/{doctorId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a doctor
+      description: Retrieve a list of all appointments for a specific doctor by their ID.
+      parameters:
+      - in: path
+        name: doctorId
+        description: The ID of the doctor whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the doctor
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the doctor
+      security:
+      - cookieAuth: []
+  /api/v1/appointments/clinic/{clinicId}:
+    get:
+      tags:
+      - Appointments
+      summary: Get all appointments for a clinic
+      description: Retrieve a list of all appointments for a specific clinic by its ID.
+      parameters:
+      - in: path
+        name: clinicId
+        description: The ID of the clinic whose appointments to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of appointments for the clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '500':
+          description: Error retrieving appointments for the clinic
       security:
       - cookieAuth: []
   /api/v1/workshifts:
@@ -1011,6 +2317,9 @@ paths:
                     example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
                     type: string
                     format: uri
+                  secret:
+                    example: JBSWY3DPEHPK3PXP
+                    type: string
         '400':
           description: Invalid request
           content:
@@ -1239,1395 +2548,171 @@ paths:
                   message:
                     example: Token expired or invalid.
                     type: string
-  /api/v1/appointments:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments
-      description: Retrieve a list of all appointments in the system.
-      responses:
-        '200':
-          description: List of appointments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments
-      security:
-      - cookieAuth: []
-    post:
-      tags:
-      - Appointments
-      summary: Create a new appointment
-      description: Schedule a new appointment for a patient with specified details.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppointmentCreate'
-        required: true
-      responses:
-        '201':
-          description: Appointment created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error creating the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/available:
-    get:
-      tags:
-      - Appointments
-      summary: Get available appointment slots
-      description: Retrieve available appointment slots for a specific clinic, doctor, and date.
-      parameters:
-      - in: query
-        name: clinicId
-        description: The ID of the clinic to check for available appointments
-        required: true
-        schema:
-          type: string
-        style: form
-      - in: query
-        name: doctorId
-        description: The ID of the doctor to check for available appointments
-        required: true
-        schema:
-          type: string
-        style: form
-      - in: query
-        name: date
-        description: The date to check for available appointments (in YYYY-MM-DD format)
-        required: true
-        schema:
-          type: string
-          format: date
-        style: form
-      responses:
-        '200':
-          description: List of available appointment slots
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    startTime:
-                      description: Start time of the available appointment slot
-                      type: string
-                      format: time
-                    endTime:
-                      description: End time of the available appointment slot
-                      type: string
-                      format: time
-        '500':
-          description: Error obtaining clinic appointments
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    example: Error obtaining clinic appointments
-                    type: string
-                  message:
-                    example: Detailed error message
-                    type: string
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}:
-    get:
-      tags:
-      - Appointments
-      summary: Get appointment by ID
-      description: Retrieve details of a specific appointment by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment details retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error retrieving the appointment
-      security:
-      - cookieAuth: []
-    put:
-      tags:
-      - Appointments
-      summary: Update an appointment
-      description: Modify details of an existing appointment by ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to update
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AppointmentUpdate'
-        required: true
-      responses:
-        '200':
-          description: Appointment updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error updating the appointment
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - Appointments
-      summary: Delete an appointment
-      description: Remove an appointment from the system by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to delete
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Appointment deleted successfully
-                    type: string
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error deleting the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}/weather:
-    get:
-      tags:
-      - Appointments
-      summary: Get weather forecast for appointment
-      description: Retrieve weather forecast for the location and date of a specific appointment by ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment for which to retrieve weather information
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Weather forecast for the appointment date and location
-        '404':
-          description: Appointment or weather data not found
-        '500':
-          description: Error retrieving the weather information
-  /api/v1/appointments/{id}/cancel:
-    put:
-      tags:
-      - Appointments
-      summary: Cancel an appointment
-      description: Change the status of an appointment to "cancelled" by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to cancel
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment cancelled successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '400':
-          description: Appointment ID not provided
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error cancelling the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}/complete:
-    put:
-      tags:
-      - Appointments
-      summary: Complete an appointment
-      description: Change the status of an appointment to "completed" by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to complete
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment completed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '400':
-          description: Appointment ID not provided
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error completing the appointment
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/{id}/noshow:
-    put:
-      tags:
-      - Appointments
-      summary: Mark an appointment as no-show
-      description: Change the status of an appointment to "no-show" by its ID.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the appointment to mark as no-show
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Appointment marked as no-show successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Appointment'
-        '400':
-          description: Appointment ID not provided
-        '404':
-          description: Appointment not found
-        '500':
-          description: Error marking appointment as no-show
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/patient/{patientId}:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments for a patient
-      description: Retrieve a list of all appointments for a specific patient by their ID.
-      parameters:
-      - in: path
-        name: patientId
-        description: The ID of the patient whose appointments to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of appointments for the patient
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments for the patient
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/doctor/{doctorId}:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments for a doctor
-      description: Retrieve a list of all appointments for a specific doctor by their ID.
-      parameters:
-      - in: path
-        name: doctorId
-        description: The ID of the doctor whose appointments to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of appointments for the doctor
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments for the doctor
-      security:
-      - cookieAuth: []
-  /api/v1/appointments/clinic/{clinicId}:
-    get:
-      tags:
-      - Appointments
-      summary: Get all appointments for a clinic
-      description: Retrieve a list of all appointments for a specific clinic by its ID.
-      parameters:
-      - in: path
-        name: clinicId
-        description: The ID of the clinic whose appointments to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of appointments for the clinic
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Appointment'
-        '500':
-          description: Error retrieving appointments for the clinic
-      security:
-      - cookieAuth: []
-  /payment:
-    post:
-      summary: Process a payment
-      description: Endpoint to process a payment, save the payment data, and activate the clinic.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                clinicId:
-                  example: 648af2e3d8e9d9c06f76c8c3
-                  description: ID of the clinic making the payment.
-                  type: string
-                planId:
-                  example: 752fc4a5b7a4c7bfe8366d34
-                  description: ID of the plan being paid for.
-                  type: string
-        required: true
-      responses:
-        '200':
-          description: Payment processed successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Payment successful
-                    type: string
-                  paymentIntent:
-                    description: Information about the payment intent created by Stripe.
-                    type: object
-        '400':
-          description: Error processing payment.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    example: 'Error processing payment: invalid payment method.'
-                    type: string
-        '404':
-          description: Plan not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    example: Plan not found
-                    type: string
-  /getPaymentById/{id}:
-    get:
-      summary: Get a payment by ID
-      description: Retrieve a specific payment by its unique ID.
-      parameters:
-      - in: path
-        name: id
-        description: Unique identifier of the payment
-        required: true
-        schema:
-          type: string
-        example: 550e8400-e29b-41d4-a716-446655440000
-        style: simple
-      responses:
-        '200':
-          description: Payment found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-        '404':
-          description: Payment not found
-  /registerPayment:
-    post:
-      summary: Register a new payment
-      description: Creates a new payment and saves it in the database.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                date:
-                  example: 2023-11-16T10:15:00.000Z
-                  description: Date of the payment
-                  type: string
-                  format: date-time
-                clinicId:
-                  example: 123e4567-e89b-12d3-a456-426614174000
-                  description: UUID of the clinic
-                  type: string
-                status:
-                  example: Pending
-                  description: Status of the payment
-                  type: string
-                  enum:
-                  - Pending
-                  - Completed
-                  - Failed
-                planId:
-                  example: 789e1234-e89b-12d3-a456-426614174001
-                  description: UUID of the plan
-                  type: string
-              required:
-              - date
-              - clinicId
-              - status
-              - planId
-        required: true
-      responses:
-        '201':
-          description: Payment successfully created
-        '400':
-          description: Invalid input data
-  /obtainAllPayments:
-    get:
-      summary: Retrieve all payments
-      description: Returns a list of all registered payments.
-      responses:
-        '200':
-          description: List of payments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
-  /deletePayment/{id}:
-    delete:
-      summary: Delete a payment by ID
-      description: Deletes a specific payment by its unique ID.
-      parameters:
-      - in: path
-        name: id
-        description: Unique identifier of the payment
-        required: true
-        schema:
-          type: string
-        example: 550e8400-e29b-41d4-a716-446655440000
-        style: simple
-      responses:
-        '204':
-          description: Payment successfully deleted
-        '404':
-          description: Payment not found
-  /obtainAllPlans:
-    get:
-      summary: Retrieve all plans
-      description: Returns a list of all registered plans.
-      responses:
-        '200':
-          description: List of plans
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Plan'
-  /registerClinic:
-    post:
-      summary: Register a new clinic
-      description: Creates a new clinic and saves it in the database.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  example: San Juan Clinic
-                  description: Name of the clinic
-                  type: string
-                city:
-                  example: Barcelona
-                  description: City where the clinic is located
-                  type: string
-                district:
-                  example: Eixample
-                  description: District of the clinic
-                  type: string
-                plan:
-                  example: Premium
-                  description: Subscription plan of the clinic
-                  type: string
-                active:
-                  example: true
-                  description: Status of the clinic
-                  type: boolean
-                postalCode:
-                  example: '08001'
-                  description: Postal code of the clinic
-                  type: string
-                countryCode:
-                  example: ES
-                  description: ISO 3166-1 alpha-2 country code
-                  type: string
-              required:
-              - name
-              - city
-              - district
-              - plan
-              - active
-              - postalCode
-              - countryCode
-        required: true
-      responses:
-        '201':
-          description: Clinic successfully created
-        '400':
-          description: Invalid input data
-  /obtainAllClinic:
-    get:
-      summary: Retrieve all clinics
-      description: Returns a list of all registered clinics.
-      responses:
-        '200':
-          description: List of clinics
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Clinic'
-  /deleteClinic/{id}:
-    delete:
-      summary: Delete a clinic by ID
-      description: Deletes a specific clinic by its unique ID.
-      parameters:
-      - in: path
-        name: id
-        description: Unique identifier of the clinic
-        required: true
-        schema:
-          type: string
-        example: 64c9c124f1a2a8b4dcd72e8d
-        style: simple
-      responses:
-        '204':
-          description: Clinic successfully deleted
-        '404':
-          description: Clinic not found
-  /updateClinic/{id}:
-    put:
-      summary: Update a clinic by ID
-      description: Updates a clinic's details based on its unique ID.
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          example: 64c9c124f1a2a8b4dcd72e8d
-          description: Unique identifier of the clinic
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  example: Updated Clinic
-                  description: Updated name of the clinic
-                  type: string
-                city:
-                  example: Madrid
-                  description: Updated city where the clinic is located
-                  type: string
-                district:
-                  example: Centro
-                  description: Updated district of the clinic
-                  type: string
-                plan:
-                  example: Basic
-                  description: Updated subscription plan of the clinic
-                  type: string
-                active:
-                  example: false
-                  description: Updated status of the clinic
-                  type: boolean
-                postalCode:
-                  example: '28001'
-                  description: Updated postal code of the clinic
-                  type: string
-                countryCode:
-                  example: ES
-                  description: Updated ISO 3166-1 alpha-2 country code
-                  type: string
-        required: true
-      responses:
-        '200':
-          description: Clinic successfully updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-              example:
-                active: false
-                city: Madrid
-                countryCode: ES
-                district: Centro
-                id: 64c9c124f1a2a8b4dcd72e8d
-                name: Updated Clinic
-                plan: Basic
-                postalCode: '28001'
-        '400':
-          description: Invalid input data
-        '404':
-          description: Clinic not found
-  /getClinicById/{id}:
-    get:
-      summary: Get a clinic by ID
-      description: Retrieve a specific clinic by its unique ID.
-      parameters:
-      - in: path
-        name: id
-        description: Unique identifier of the clinic
-        required: true
-        schema:
-          type: string
-        example: 64c9c124f1a2a8b4dcd72e8d
-        style: simple
-      responses:
-        '200':
-          description: Clinic found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-        '404':
-          description: Clinic not found
-  /api/v1/histories:
-    get:
-      summary: Get all clinical histories
-      responses:
-        '200':
-          description: Returns a list of all clinical histories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ClinicalHistory'
-        '500':
-          description: Error retrieving clinical histories
-    post:
-      summary: Create a new clinical history
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateClinicalHistory'
-        required: true
-      responses:
-        '201':
-          description: Clinical history created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Patient ID is required or validation error
-        '500':
-          description: Error creating clinical history
-  /api/v1/histories/{id}:
-    get:
-      summary: Get a clinical history by its ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Returns the requested clinical history
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '500':
-          description: Error retrieving clinical history
-    delete:
-      summary: Delete a clinical history by its ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Clinical history deleted successfully
-        '400':
-          description: Clinical history ID is required
-        '500':
-          description: Error deleting clinical history
-  /api/v1/histories/patient/{patientId}:
-    get:
-      summary: Get a clinical history by patient ID
-      parameters:
-      - in: path
-        name: patientId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Returns the clinical history for the requested patient
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '500':
-          description: Error retrieving clinical history for patient
-    delete:
-      summary: Delete a clinical history by patient ID
-      parameters:
-      - in: path
-        name: patientId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Clinical history for the patient deleted successfully
-        '400':
-          description: Patient ID is required
-        '500':
-          description: Error deleting clinical history for patient
-  /api/v1/histories/{id}/allergy:
-    post:
-      summary: Add an allergy to a clinical history
-      description: Adds an allergy to the allergies set in a specific clinical history.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the clinical history.
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                allergy:
-                  description: The name of the allergy to add.
-                  type: string
-              required:
-              - allergy
-        required: true
-      responses:
-        '200':
-          description: Allergy successfully added to the clinical history.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  allergies:
-                    type: array
-                    items:
-                      type: string
-        '400':
-          description: Missing clinical history ID or allergy in the request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '404':
-          description: Clinical history not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '500':
-          description: Internal server error while adding the allergy.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-  /api/v1/histories/{id}/allergy/{allergy}:
-    delete:
-      summary: Remove an allergy from a clinical history
-      description: Removes an allergy from the allergies set in a specific clinical history.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the clinical history.
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: allergy
-        description: The name of the allergy to remove.
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Allergy successfully removed from the clinical history.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  allergies:
-                    type: array
-                    items:
-                      type: string
-        '400':
-          description: Missing clinical history ID or allergy in the request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '404':
-          description: Clinical history not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        '500':
-          description: Internal server error while removing the allergy.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-  /api/v1/histories/{id}/treatment:
-    post:
-      summary: Add a new treatment to a clinical history
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Treatment'
-        required: true
-      responses:
-        '200':
-          description: Treatment added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Clinical history ID is required or validation error
-        '404':
-          description: Clinical history not found
-        '500':
-          description: Error adding treatment
-  /api/v1/histories/{id}/treatment/{treatmentId}:
-    put:
-      summary: Update a treatment in a clinical history
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: treatmentId
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Treatment'
-        required: true
-      responses:
-        '200':
-          description: Treatment updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Clinical history ID or Treatment ID is required, or validation error
-        '404':
-          description: Clinical history or treatment not found
-        '500':
-          description: Error updating treatment
-    delete:
-      summary: Delete a treatment from a clinical history
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: treatmentId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Treatment deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Clinical history ID or Treatment ID is required
-        '404':
-          description: Clinical history or treatment not found
-        '500':
-          description: Error deleting treatment
-  /api/v1/histories/{id}/condition:
-    post:
-      summary: Add a new current condition to a clinical history
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CurrentCondition'
-        required: true
-      responses:
-        '200':
-          description: Current condition added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Clinical history ID is required or validation error
-        '404':
-          description: Clinical history not found
-        '500':
-          description: Error adding current condition
-  /api/v1/histories/{id}/condition/{currentConditionId}:
-    put:
-      summary: Update a current condition in a clinical history
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: currentConditionId
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CurrentCondition'
-        required: true
-      responses:
-        '200':
-          description: Current condition updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Clinical history ID or Current condition ID is required, or validation error
-        '404':
-          description: Clinical history or current condition not found
-        '500':
-          description: Error updating current condition
-    delete:
-      summary: Delete a current condition from a clinical history
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: currentConditionId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Current condition deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClinicalHistory'
-        '400':
-          description: Clinical history ID or Current condition ID is required
-        '404':
-          description: Clinical history or current condition not found
-        '500':
-          description: Error deleting current condition
-  /api/v1/histories/{id}/image:
-    post:
-      summary: Upload an image to a clinical history record
-      description: Allows uploading an image to an existing clinical history record.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the clinical history record.
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  description: The image file to upload.
-                  type: string
-                  format: binary
-        required: true
-      responses:
-        '201':
-          description: Image uploaded successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Image uploaded successfully
-                    type: string
-                  imageUrl:
-                    description: URL of the uploaded image.
-                    type: string
-        '400':
-          description: Bad Request - Missing required headers or Clinical History ID.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: clinicalHistoryId is required
-                    type: string
-        '404':
-          description: Clinical History record not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Clinical history not found
-                    type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Internal server error occurred.
-                    type: string
-  /api/v1/histories/{id}/image/{imageId}:
-    delete:
-      summary: Delete an image from a clinical history record
-      description: Deletes a specific image associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the clinical history record.
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: imageId
-        description: The ID of the image to delete.
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Image deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Image deleted successfully
-                    type: string
-        '400':
-          description: Bad Request - Missing or invalid parameters.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: clinicalHistoryId and imageId are required
-                    type: string
-        '404':
-          description: Not Found - Clinical history or image not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Clinical history or image not found
-                    type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Error deleting image
-                    type: string
-                  error:
-                    example: Detailed error message.
-                    type: string
-  /api/v1/histories/{id}/analytic:
-    post:
-      summary: Upload an analytic to a clinical history record
-      description: Allows uploading an analytic to an existing clinical history record.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the clinical history record.
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  description: The analytic file to upload.
-                  type: string
-                  format: binary
-        required: true
-      responses:
-        '201':
-          description: Analytic uploaded successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Analytic uploaded successfully
-                    type: string
-                  analyticUrl:
-                    description: URL of the uploaded analytic.
-                    type: string
-        '400':
-          description: Bad Request - Missing required headers or Clinical History ID.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: clinicalHistoryId is required
-                    type: string
-        '404':
-          description: Clinical History record not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Clinical history not found
-                    type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Internal server error occurred.
-                    type: string
-  /api/v1/histories/{id}/analytic/{analyticId}:
-    delete:
-      summary: Delete an analytic from a clinical history record
-      description: Deletes a specific analytic associated with a clinical history record by its ID. Also removes the file from Azure Blob Storage.
-      parameters:
-      - in: path
-        name: id
-        description: The ID of the clinical history record.
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: analyticId
-        description: The ID of the analytic to delete.
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Analytic deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Analytic deleted successfully
-                    type: string
-        '400':
-          description: Bad Request - Missing or invalid parameters.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: clinicalHistoryId and analyticId are required
-                    type: string
-        '404':
-          description: Not Found - Clinical history or analytic not found.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Clinical history or analytic not found
-                    type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Error deleting analytic
-                    type: string
-                  error:
-                    example: Detailed error message.
-                    type: string
 components:
   schemas:
+    ClinicalHistory:
+      type: object
+      properties:
+        id:
+          type: string
+        patientId:
+          type: string
+        treatments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Treatment'
+        currentConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CurrentCondition'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        analytics:
+          type: array
+          items:
+            $ref: '#/components/schemas/File'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateClinicalHistory:
+      type: object
+      properties:
+        patientId:
+          type: string
+      required:
+      - patientId
+    Treatment:
+      type: object
+      properties:
+        name:
+          description: Name of the treatment
+          type: string
+        startDate:
+          description: Start date of the treatment
+          type: string
+          format: date
+        endDate:
+          description: End date of the treatment
+          type: string
+          format: date
+        instructions:
+          description: Instructions for the treatment
+          type: string
+      required:
+      - name
+      - endDate
+      - instructions
+    CurrentCondition:
+      type: object
+      properties:
+        name:
+          description: Name of the current condition
+          type: string
+        details:
+          description: Additional details about the current condition
+          type: string
+        since:
+          description: When the condition started
+          type: string
+          format: date
+        until:
+          description: When the condition ended
+          type: string
+          format: date
+      required:
+      - name
+      - details
+    File:
+      type: object
+      properties:
+        name:
+          description: Name of the file
+          type: string
+        originalName:
+          description: Original name of the file
+          type: string
+        url:
+          description: URL of the file
+          type: string
+        date:
+          description: Date the file was uploaded
+          type: string
+          format: date-time
+    Clinic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    ClinicRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        clinicId:
+          type: string
+        status:
+          type: string
+        planId:
+          type: string
+    PaymentRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+        clinicId:
+          type: string
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
     Patient:
       type: object
       properties:
@@ -2665,6 +2750,146 @@ components:
       properties:
         message:
           type: string
+    Appointment:
+      type: object
+      properties:
+        id:
+          description: Unique identifier for the appointment
+          type: string
+        patientId:
+          description: ID of the patient associated with the appointment
+          type: string
+        clinicId:
+          description: ID of the clinic where the appointment is scheduled
+          type: string
+        doctorId:
+          description: ID of the doctor handling the appointment
+          type: string
+        specialty:
+          description: Medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Date and time of the appointment
+          type: string
+          format: date-time
+        status:
+          description: Current status of the appointment
+          type: string
+          enum:
+          - pending
+          - completed
+          - cancelled
+          - no_show
+        createdAt:
+          description: Appointment creation timestamp
+          type: string
+          format: date-time
+    AppointmentCreate:
+      type: object
+      properties:
+        patientId:
+          description: ID of the patient for whom the appointment is created
+          type: string
+        clinicId:
+          description: ID of the clinic where the appointment will be held
+          type: string
+        doctorId:
+          description: ID of the doctor for the appointment
+          type: string
+        specialty:
+          description: Medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Date and time of the appointment
+          type: string
+          format: date-time
+      required:
+      - patientId
+      - clinicId
+      - doctorId
+      - specialty
+      - appointmentDate
+    AppointmentUpdate:
+      type: object
+      properties:
+        specialty:
+          description: Updated medical specialty for the appointment
+          type: string
+          enum:
+          - family_medicine
+          - nursing
+          - physiotherapy
+          - gynecology
+          - pediatrics
+          - dermatology
+          - cardiology
+          - neurology
+          - orthopedics
+          - psychiatry
+          - endocrinology
+          - oncology
+          - radiology
+          - surgery
+          - ophthalmology
+          - urology
+          - anesthesiology
+          - otolaryngology
+          - gastroenterology
+          - other
+        appointmentDate:
+          description: Updated date and time of the appointment
+          type: string
+          format: date-time
+        status:
+          description: Updated status of the appointment
+          type: string
+          enum:
+          - pending
+          - completed
+          - cancelled
+          - no_show
     Workshift:
       type: object
       properties:
@@ -2755,303 +2980,11 @@ components:
       - email
       - password
       - roles
-    Appointment:
-      type: object
-      properties:
-        id:
-          description: Unique identifier for the appointment
-          type: string
-        patientId:
-          description: ID of the patient associated with the appointment
-          type: string
-        clinicId:
-          description: ID of the clinic where the appointment is scheduled
-          type: string
-        doctorId:
-          description: ID of the doctor handling the appointment
-          type: string
-        specialty:
-          description: Medical specialty for the appointment
-          type: string
-          enum:
-          - family_medicine
-          - nursing
-          - physiotherapy
-          - gynecology
-          - pediatrics
-          - dermatology
-          - cardiology
-          - neurology
-          - orthopedics
-          - psychiatry
-          - endocrinology
-          - oncology
-          - radiology
-          - surgery
-          - ophthalmology
-          - urology
-          - anesthesiology
-          - otolaryngology
-          - gastroenterology
-          - other
-        appointmentDate:
-          description: Date and time of the appointment
-          type: string
-          format: date-time
-        status:
-          description: Current status of the appointment
-          type: string
-          enum:
-          - pending
-          - completed
-          - cancelled
-          - no-show
-        createdAt:
-          description: Appointment creation timestamp
-          type: string
-          format: date-time
-    AppointmentCreate:
-      type: object
-      properties:
-        patientId:
-          description: ID of the patient for whom the appointment is created
-          type: string
-        clinicId:
-          description: ID of the clinic where the appointment will be held
-          type: string
-        doctorId:
-          description: ID of the doctor for the appointment
-          type: string
-        specialty:
-          description: Medical specialty for the appointment
-          type: string
-          enum:
-          - family_medicine
-          - nursing
-          - physiotherapy
-          - gynecology
-          - pediatrics
-          - dermatology
-          - cardiology
-          - neurology
-          - orthopedics
-          - psychiatry
-          - endocrinology
-          - oncology
-          - radiology
-          - surgery
-          - ophthalmology
-          - urology
-          - anesthesiology
-          - otolaryngology
-          - gastroenterology
-          - other
-        appointmentDate:
-          description: Date and time of the appointment
-          type: string
-          format: date-time
-      required:
-      - patientId
-      - clinicId
-      - doctorId
-      - specialty
-      - appointmentDate
-    AppointmentUpdate:
-      type: object
-      properties:
-        specialty:
-          description: Updated medical specialty for the appointment
-          type: string
-          enum:
-          - family_medicine
-          - nursing
-          - physiotherapy
-          - gynecology
-          - pediatrics
-          - dermatology
-          - cardiology
-          - neurology
-          - orthopedics
-          - psychiatry
-          - endocrinology
-          - oncology
-          - radiology
-          - surgery
-          - ophthalmology
-          - urology
-          - anesthesiology
-          - otolaryngology
-          - gastroenterology
-          - other
-        appointmentDate:
-          description: Updated date and time of the appointment
-          type: string
-          format: date-time
-        status:
-          description: Updated status of the appointment
-          type: string
-          enum:
-          - pending
-          - completed
-          - cancelled
-          - no-show
-    Payment:
-      type: object
-      properties:
-        _id:
-          description: Unique identifier for the payment
-          type: string
-        date:
-          description: Date of the payment
-          type: string
-          format: date-time
-        clinicId:
-          description: UUID of the clinic associated with the payment
-          type: string
-        status:
-          description: Status of the payment
-          type: string
-          enum:
-          - Pending
-          - Completed
-          - Failed
-        planId:
-          description: UUID of the plan associated with the payment
-          type: string
-    Clinic:
-      type: object
-      properties:
-        _id:
-          description: Unique identifier for the clinic
-          type: string
-        name:
-          description: Name of the clinic
-          type: string
-        city:
-          description: City where the clinic is located
-          type: string
-        district:
-          description: District of the clinic
-          type: string
-        plan:
-          description: Subscription plan of the clinic
-          type: string
-        active:
-          description: Status of the clinic
-          type: boolean
-        postalCode:
-          description: Postal code of the clinic
-          type: string
-        countryCode:
-          description: ISO 3166-1 alpha-2 country code
-          type: string
-    Plan:
-      type: object
-      properties:
-        _id:
-          description: Unique identifier for the plan
-          type: string
-        name:
-          description: Name of the plan
-          type: string
-        price:
-          description: Price of the plan
-          type: number
-        features:
-          description: List of features included in the plan
-          type: array
-          items:
-            type: string
-    ClinicalHistory:
-      type: object
-      properties:
-        id:
-          type: string
-        patientId:
-          type: string
-        treatments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Treatment'
-        currentConditions:
-          type: array
-          items:
-            $ref: '#/components/schemas/CurrentCondition'
-        images:
-          type: array
-          items:
-            $ref: '#/components/schemas/File'
-        analytics:
-          type: array
-          items:
-            $ref: '#/components/schemas/File'
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    CreateClinicalHistory:
-      type: object
-      properties:
-        patientId:
-          type: string
-      required:
-      - patientId
-    Treatment:
-      type: object
-      properties:
-        name:
-          description: Name of the treatment
-          type: string
-        startDate:
-          description: Start date of the treatment
-          type: string
-          format: date
-        endDate:
-          description: End date of the treatment
-          type: string
-          format: date
-        instructions:
-          description: Instructions for the treatment
-          type: string
-      required:
-      - name
-      - endDate
-      - instructions
-    CurrentCondition:
-      type: object
-      properties:
-        name:
-          description: Name of the current condition
-          type: string
-        details:
-          description: Additional details about the current condition
-          type: string
-        since:
-          description: When the condition started
-          type: string
-          format: date
-      required:
-      - name
-      - details
-    File:
-      type: object
-      properties:
-        name:
-          description: Name of the file
-          type: string
-        originalName:
-          description: Original name of the file
-          type: string
-        url:
-          description: URL of the file
-          type: string
-        date:
-          description: Date the file was uploaded
-          type: string
-          format: date-time
   securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
     cookieAuth:
       type: apiKey
       in: cookie
