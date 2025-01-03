@@ -4,7 +4,10 @@ info:
   version: 1.0.0
   description: API for managing clinics, plans, and payments.
 servers:
+  - url: http://localhost:3003/api/v1
+    description: Development server
   - url: /api/v1
+    description: Production server
   
 tags:
   - name: Clinic
