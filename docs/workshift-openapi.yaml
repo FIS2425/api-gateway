@@ -8,6 +8,8 @@ info:
 servers:
   - url: http://localhost:3011/api/v1
     description: Local server for development
+  - url: /api/v1
+    description: Production server
 
 tags:
   - name: Workshifts

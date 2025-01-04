@@ -2,10 +2,13 @@ openapi: 3.0.0
 info:
   title: Clinical History API
   description: API to manage patient clinical histories.
-  version: 1.0.1
+  version: 1.1.1
 servers:
   - url: http://localhost:3005/api/v1
     description: Local development server
+  - url: /api/v1
+    description: Production server
+
 paths:
   /histories:
     get:

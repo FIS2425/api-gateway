@@ -190,9 +190,6 @@ components:
     Patient:
       type: object
       properties:
-        id:
-          type: string
-          description: Unique identifier of the patient.
         name:
           type: string
         surname:
@@ -204,19 +201,17 @@ components:
           type: string
         city:
           type: string
-        clinicHistoryId:
-          type: string
-        username:
-          type: string
         email:
           type: string
+        password:
+          type: string
+        
       required:
         - name
         - surname
         - birthdate
         - dni
         - city
-        - clinicHistoryId
         - username
         - email
     ErrorResponse:
