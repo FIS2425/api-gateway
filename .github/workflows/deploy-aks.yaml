@@ -1,0 +1,35 @@
+name: Deploy to AKS
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Build and Push Docker Image
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up KUBECONFIG
+      uses: azure/k8s-set-context@v4
+      with:
+        kubeconfig: ${{ secrets.KUBECONFIG }}
+    
+    - name: Apply manifests
+      run: |
+        echo "Apply manifests..."
+        kubectl apply -f kubernetes/
+    
+    - name: Restart specified deployments
+      run: |
+        echo "Restarting api-gateway ..."
+        kubectl rollout restart deployment api-gateway
