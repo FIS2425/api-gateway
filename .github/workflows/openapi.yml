@@ -38,7 +38,7 @@ jobs:
         run: cargo build --verbose
 
       - name: Generate OpenAPI Spec 📜
-        run: cargo run -- merge --url 'http://0.0.0.0:8080' --specs './docs/' --output './static/openapi.yaml'
+        run: cargo run -- merge --specs './docs/' --output './static/openapi.yaml'
 
       - name: Commit changes 📤
         run: |

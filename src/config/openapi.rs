@@ -9,16 +9,14 @@ use walkdir::WalkDir;
 
 #[derive(Debug)]
 pub struct OpenApiMerger {
-    url: String,
     base_path: String,
     specs: HashMap<String, OpenAPI>,
     output_path: String,
 }
 
 impl OpenApiMerger {
-    pub fn new(url: &str, docs_path: &str, output_path: &str) -> Self {
+    pub fn new(docs_path: &str, output_path: &str) -> Self {
         OpenApiMerger {
-            url: url.to_string(),
             base_path: docs_path.to_string(),
             specs: HashMap::new(),
             output_path: output_path.to_string(),
@@ -99,7 +97,7 @@ impl OpenApiMerger {
     }
 
     pub fn generate_swagger_ui(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let swagger_ui_html = format!(
+        let swagger_ui_html = String::from(
             r#"
         <!DOCTYPE html>
         <html lang="en">
@@ -115,7 +113,7 @@ impl OpenApiMerger {
             <div id="swagger-ui"></div>
             <script>
               const ui = SwaggerUIBundle({{
-                url: '{}/docs/spec',
+                url: '/docs/spec',
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
@@ -128,7 +126,6 @@ impl OpenApiMerger {
           </body>
         </html>
         "#,
-            self.url
         );
 
         let output_dir = Path::new(&self.output_path).parent().unwrap();

@@ -40,12 +40,6 @@ async fn main() {
             Command::new("merge")
                 .about("Merge OpenAPI specs")
                 .arg(
-                    Arg::new("url")
-                        .long("url")
-                        .required(true)
-                        .help("The url of the API Gateway."),
-                )
-                .arg(
                     Arg::new("specs")
                         .long("specs")
                         .required(true)
@@ -84,9 +78,6 @@ async fn main() {
 
     match matches.subcommand() {
         Some(("merge", sub_matches)) => {
-            let url = sub_matches
-                .get_one::<String>("url")
-                .expect("URL is required.");
             let specs = sub_matches
                 .get_one::<String>("specs")
                 .expect("Specs directory is required.");
@@ -94,7 +85,7 @@ async fn main() {
                 .get_one::<String>("output")
                 .expect("Output path is required.");
             println!("Merging OpenAPI specs...");
-            if let Err(err) = merge_openapi_specs(url, specs, output).await {
+            if let Err(err) = merge_openapi_specs(specs, output).await {
                 eprintln!("Error merging OpenAPI specs: {:?}", err);
             }
         }
@@ -193,11 +184,10 @@ async fn api_gateway(
 }
 
 async fn merge_openapi_specs(
-    url: &str,
     docs_path: &str,
     output_path: &str,
 ) -> Result<OpenAPI, Box<dyn std::error::Error + Send + Sync>> {
-    let mut merger = OpenApiMerger::new(url, docs_path, output_path);
+    let mut merger = OpenApiMerger::new(docs_path, output_path);
     merger.load_specs()?;
     let merged_spec = merger.merge()?;
     merger.generate_swagger_ui()?;

@@ -94,7 +94,7 @@ This subcommand merges OpenAPI specifications into a single HTML output.
 #### Usage:
 
 ```bash
-cargo run -- merge --url <URL> --specs <SPEC_DIR> --output <OUTPUT_PATH>
+cargo run -- merge --specs <SPEC_DIR> --output <OUTPUT_PATH>
 ```
 
 - `--url`: The URL of the API Gateway.
@@ -104,7 +104,7 @@ cargo run -- merge --url <URL> --specs <SPEC_DIR> --output <OUTPUT_PATH>
 #### Example:
 
 ```bash
-cargo run -- merge --url "http://0.0.0.0:8080" --specs "./docs/" --output "./static/openapi.yaml"
+cargo run -- merge --specs "./docs/" --output "./static/openapi.yaml"
 ```
 
 In this example, the command merges the OpenAPI specs located in the `docs/` directory and generates a merged HTML spec at `static/openapi.html`. The `--url` argument specifies the API Gateway URL.
