@@ -16,6 +16,7 @@ services=(
     payment
     staff
     workshift
+    logger
 )
 
 for svc in "${services[@]}"; do
