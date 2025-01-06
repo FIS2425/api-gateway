@@ -40,6 +40,57 @@ paths:
                       features:
                         - "Feature A"
                         - "Feature B"
+  /plans/{id}:
+    get:
+      tags:
+        - Plan
+      summary: Retrieve a plan by ID
+      description: Retrieves details of a specific plan by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier for the plan
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          description: Missing plan ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing plan ID
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Plan not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: An unexpected error occurred
+
   /payments:
     get:
       tags:
@@ -97,6 +148,33 @@ paths:
                 $ref: '#/components/schemas/Payment'
         '404':
           description: Payment not found
+  /payments/clinic/{clinicId}:
+    get:
+      tags:
+        - Payment
+      summary: Retrieve all payments by clinic ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: clinicId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of payments for the specified clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '400':
+          description: Clinic ID is required
+        '500':
+          description: Server error
+
   /clinics:
     post:
       tags:

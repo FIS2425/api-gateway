@@ -1,0 +1,154 @@
+openapi: 3.0.0
+info:
+  title: Microservicio Logger
+  version: 1.0.0
+  description: Logger for medical consultation application. Saves and handles all the logs from the different microservices 
+
+servers:
+  - url: http://localhost:3009
+
+paths:
+  /logs:
+    get:
+      summary: Fetch list of log entries
+      description: Retrieves a list of logs stored in the S3 bucket, ordered by timestamp in descending order. Requires admin authentication.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: A list of logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        requestId:
+                          type: string
+                          description: Unique identifier for the request log.
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: The timestamp when the log was created.
+        '401':
+          description: Unauthorized - No token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating access was denied due to missing token.
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating insufficient permissions.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message describing the issue.
+
+  /logs/{requestId}:
+    get:
+      summary: Fetch logs for a specific request
+      description: Retrieves the logs for a specific request ID stored in the S3 bucket. Requires admin authentication.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          description: The unique identifier of the request log to retrieve.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Logs for the specified request ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    type: string
+                    description: The unique identifier of the request.
+                  logs:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      description: Log details for the request.
+        '401':
+          description: Unauthorized - No token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating access was denied due to missing token.
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating insufficient permissions.
+        '404':
+          description: Logs not found for the specified request ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message indicating the logs were not found.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message describing the issue.
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+  schemas:
+    LogEntry:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: Unique identifier for the request log.
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp when the log was created.
