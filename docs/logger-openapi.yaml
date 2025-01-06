@@ -5,13 +5,15 @@ info:
   description: Logger for medical consultation application. Saves and handles all the logs from the different microservices 
 
 servers:
-  - url: http://localhost:3009
+  - url: /api/v1
 
 paths:
   /logs:
     get:
       summary: Fetch list of log entries
       description: Retrieves a list of logs stored in the S3 bucket, ordered by timestamp in descending order. Requires admin authentication.
+      tags:
+        - Logs
       security:
         - cookieAuth: []
       responses:
@@ -69,6 +71,8 @@ paths:
     get:
       summary: Fetch logs for a specific request
       description: Retrieves the logs for a specific request ID stored in the S3 bucket. Requires admin authentication.
+      tags:
+        - Logs
       security:
         - cookieAuth: []
       parameters:
