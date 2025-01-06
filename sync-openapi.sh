@@ -8,7 +8,6 @@ mkdir -p "$SPECS_DIR"
 
 # Just list services one per line
 services=(
-    alert
     appointment
     authorization
     history

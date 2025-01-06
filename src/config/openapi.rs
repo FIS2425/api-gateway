@@ -112,7 +112,7 @@ impl OpenApiMerger {
           <body>
             <div id="swagger-ui"></div>
             <script>
-              const ui = SwaggerUIBundle({{
+              const ui = SwaggerUIBundle({
                 url: '/docs/spec',
                 dom_id: '#swagger-ui',
                 deepLinking: true,
@@ -121,7 +121,7 @@ impl OpenApiMerger {
                   SwaggerUIStandalonePreset
                 ],
                 layout: "BaseLayout"
-              }});
+              });
             </script>
           </body>
         </html>
