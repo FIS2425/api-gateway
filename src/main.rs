@@ -238,7 +238,7 @@ async fn handle_request(
     };
 
     if needs_auth(path, req.method().as_str(), &config.endpoints_without_auth) {
-        match authorize_user(req.headers(), &config.authorization_api_url).await {
+        match authorize_user(req.headers(), &config.authorization_api_url, &request_id).await {
             Ok(res) if !res.status().is_success() => {
                 logger.info(
                     "Connection closed",
@@ -359,7 +359,11 @@ fn needs_auth(path: &str, method: &str, no_auth_endpoints: &[NoAuthEndpoints]) -
         .any(|e| e.endpoint == path && e.method == method)
 }
 
-async fn authorize_user(headers: &HeaderMap, auth_api_url: &str) -> Result<Response<BoxBody>, ()> {
+async fn authorize_user(
+    headers: &HeaderMap,
+    auth_api_url: &str,
+    request_id: &str,
+) -> Result<Response<BoxBody>, ()> {
     let cookies_header_value = match headers.get(COOKIE) {
         Some(value) => value.to_str().unwrap_or_default(),
         None => "",
@@ -368,6 +372,7 @@ async fn authorize_user(headers: &HeaderMap, auth_api_url: &str) -> Result<Respo
     let auth_request = Request::builder()
         .uri(auth_api_url)
         .header(COOKIE, cookies_header_value)
+        .header("x-request-id", request_id)
         .body(BoxBody::default())
         .unwrap();
 
