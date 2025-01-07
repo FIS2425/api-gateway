@@ -669,6 +669,462 @@ paths:
           description: Error retrieving authenticated doctor
       security:
       - cookieAuth: []
+  /api/v1/workshifts:
+    get:
+      tags:
+      - Workshifts
+      summary: Get all workshifts
+      responses:
+        '200':
+          description: Retrieve a list of workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Workshifts
+      summary: Create a new workshift
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+        required: true
+      responses:
+        '201':
+          description: Workshift created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Validation error
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts/week:
+    post:
+      tags:
+      - Workshifts
+      summary: Create a new workshift for a week
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctorId:
+                  description: Unique identifier for the doctor
+                  type: string
+                clinicId:
+                  description: Unique identifier for the clinic
+                  type: string
+                duration:
+                  example: 480
+                  description: Duration of each work shift in minutes
+                  type: integer
+                periodStartDate:
+                  description: Start date of the week, must be a Monday
+                  type: string
+                  format: date-time
+                periodEndDate:
+                  description: End date of the week, must be a Sunday within the same week as weekStartDate
+                  type: string
+                  format: date
+              required:
+              - doctorId
+              - clinicId
+              - duration
+              - weekStartDate
+              - weekEndDate
+        required: true
+      responses:
+        '201':
+          description: Workshifts created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Invalid input or validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: weekStartDate must be a Monday and weekEndDate a Sunday of the same week
+                    description: Error message explaining the issue
+                    type: string
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts/{id}:
+    get:
+      tags:
+      - Workshifts
+      summary: Get a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Retrieve a workshift
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+    put:
+      tags:
+      - Workshifts
+      summary: Update a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+        required: true
+      responses:
+        '200':
+          description: Workshift updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '400':
+          description: Validation error
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Workshifts
+      summary: Delete a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Workshift deleted
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts/doctor/{doctorId}:
+    get:
+      tags:
+      - Workshifts
+      summary: Get workshifts by doctor ID
+      parameters:
+      - in: path
+        name: doctorId
+        description: Doctor ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Lista de workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Error del servidor
+      security:
+      - cookieAuth: []
+  /api/v1/plans:
+    get:
+      tags:
+      - Plan
+      summary: Retrieve all plans
+      responses:
+        '200':
+          description: A list of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+              examples:
+                example1:
+                  value:
+                  - features:
+                    - Feature A
+                    - Feature B
+                    id: '1'
+                    name: Basic Plan
+                    price: 10.0
+  /api/v1/plans/{id}:
+    get:
+      tags:
+      - Plan
+      summary: Retrieve a plan by ID
+      description: Retrieves details of a specific plan by its unique ID.
+      parameters:
+      - in: path
+        name: id
+        description: The unique identifier for the plan
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Plan successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          description: Missing plan ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Missing plan ID
+                    type: string
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Plan not found
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: An unexpected error occurred
+                    type: string
+  /api/v1/payments:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve all payments
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Payment
+      summary: Process a new payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      responses:
+        '201':
+          description: Payment successfully processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+      security:
+      - cookieAuth: []
+  /api/v1/payments/{id}:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve a payment by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Details of a specific payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+      security:
+      - cookieAuth: []
+  /api/v1/payments/clinic/{clinicId}:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve all payments by clinic ID
+      parameters:
+      - in: path
+        name: clinicId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: A list of payments for the specified clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '400':
+          description: Clinic ID is required
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+  /api/v1/clinics:
+    get:
+      tags:
+      - Clinic
+      summary: Retrieve all clinics
+      responses:
+        '200':
+          description: A list of clinics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Clinic'
+    post:
+      tags:
+      - Clinic
+      summary: Register a new clinic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+        required: true
+      responses:
+        '201':
+          description: Clinic successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+      security:
+      - cookieAuth: []
+  /api/v1/clinics/{id}:
+    get:
+      tags:
+      - Clinic
+      summary: Retrieve a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Details of a specific clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+        '404':
+          description: Clinic not found
+    put:
+      tags:
+      - Clinic
+      summary: Update a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+        required: true
+      responses:
+        '200':
+          description: Clinic successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Clinic
+      summary: Delete a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Clinic successfully deleted
+      security:
+      - cookieAuth: []
   /api/v1/histories:
     get:
       summary: Get all clinical histories
@@ -1417,261 +1873,6 @@ paths:
                     type: string
       security:
       - jwt: []
-  /api/v1/plans:
-    get:
-      tags:
-      - Plan
-      summary: Retrieve all plans
-      responses:
-        '200':
-          description: A list of plans
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Plan'
-              examples:
-                example1:
-                  value:
-                  - features:
-                    - Feature A
-                    - Feature B
-                    id: '1'
-                    name: Basic Plan
-                    price: 10.0
-  /api/v1/plans/{id}:
-    get:
-      tags:
-      - Plan
-      summary: Retrieve a plan by ID
-      description: Retrieves details of a specific plan by its unique ID.
-      parameters:
-      - in: path
-        name: id
-        description: The unique identifier for the plan
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Plan successfully retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Plan'
-        '400':
-          description: Missing plan ID
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Missing plan ID
-                    type: string
-        '404':
-          description: Plan not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Plan not found
-                    type: string
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: An unexpected error occurred
-                    type: string
-  /api/v1/payments:
-    get:
-      tags:
-      - Payment
-      summary: Retrieve all payments
-      responses:
-        '200':
-          description: A list of payments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
-      security:
-      - cookieAuth: []
-    post:
-      tags:
-      - Payment
-      summary: Process a new payment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentRequest'
-        required: true
-      responses:
-        '201':
-          description: Payment successfully processed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-      security:
-      - cookieAuth: []
-  /api/v1/payments/{id}:
-    get:
-      tags:
-      - Payment
-      summary: Retrieve a payment by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Details of a specific payment
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-        '404':
-          description: Payment not found
-      security:
-      - cookieAuth: []
-  /api/v1/payments/clinic/{clinicId}:
-    get:
-      tags:
-      - Payment
-      summary: Retrieve all payments by clinic ID
-      parameters:
-      - in: path
-        name: clinicId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: A list of payments for the specified clinic
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
-        '400':
-          description: Clinic ID is required
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-  /api/v1/clinics:
-    get:
-      tags:
-      - Clinic
-      summary: Retrieve all clinics
-      responses:
-        '200':
-          description: A list of clinics
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Clinic'
-    post:
-      tags:
-      - Clinic
-      summary: Register a new clinic
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ClinicRequest'
-        required: true
-      responses:
-        '201':
-          description: Clinic successfully registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-      security:
-      - cookieAuth: []
-  /api/v1/clinics/{id}:
-    get:
-      tags:
-      - Clinic
-      summary: Retrieve a clinic by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Details of a specific clinic
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-        '404':
-          description: Clinic not found
-    put:
-      tags:
-      - Clinic
-      summary: Update a clinic by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ClinicRequest'
-        required: true
-      responses:
-        '200':
-          description: Clinic successfully updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - Clinic
-      summary: Delete a clinic by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Clinic successfully deleted
-      security:
-      - cookieAuth: []
   /api/v1/users:
     post:
       tags:
@@ -2393,207 +2594,6 @@ paths:
                   message:
                     example: Token expired or invalid.
                     type: string
-  /api/v1/workshifts:
-    get:
-      tags:
-      - Workshifts
-      summary: Get all workshifts
-      responses:
-        '200':
-          description: Retrieve a list of workshifts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workshift'
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-    post:
-      tags:
-      - Workshifts
-      summary: Create a new workshift
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkshiftInput'
-        required: true
-      responses:
-        '201':
-          description: Workshift created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workshift'
-        '400':
-          description: Validation error
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts/week:
-    post:
-      tags:
-      - Workshifts
-      summary: Create a new workshift for a week
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                doctorId:
-                  description: Unique identifier for the doctor
-                  type: string
-                clinicId:
-                  description: Unique identifier for the clinic
-                  type: string
-                duration:
-                  example: 480
-                  description: Duration of each work shift in minutes
-                  type: integer
-                periodStartDate:
-                  description: Start date of the week, must be a Monday
-                  type: string
-                  format: date-time
-                periodEndDate:
-                  description: End date of the week, must be a Sunday within the same week as weekStartDate
-                  type: string
-                  format: date
-              required:
-              - doctorId
-              - clinicId
-              - duration
-              - weekStartDate
-              - weekEndDate
-        required: true
-      responses:
-        '201':
-          description: Workshifts created successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workshift'
-        '400':
-          description: Invalid input or validation error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: weekStartDate must be a Monday and weekEndDate a Sunday of the same week
-                    description: Error message explaining the issue
-                    type: string
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts/{id}:
-    get:
-      tags:
-      - Workshifts
-      summary: Get a workshift by ID
-      parameters:
-      - in: path
-        name: id
-        description: Workshift ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Retrieve a workshift
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workshift'
-        '404':
-          description: Workshift not found
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-    put:
-      tags:
-      - Workshifts
-      summary: Update a workshift by ID
-      parameters:
-      - in: path
-        name: id
-        description: Workshift ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkshiftInput'
-        required: true
-      responses:
-        '200':
-          description: Workshift updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workshift'
-        '404':
-          description: Workshift not found
-        '400':
-          description: Validation error
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - Workshifts
-      summary: Delete a workshift by ID
-      parameters:
-      - in: path
-        name: id
-        description: Workshift ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Workshift deleted
-        '404':
-          description: Workshift not found
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts/doctor/{doctorId}:
-    get:
-      tags:
-      - Workshifts
-      summary: Get workshifts by doctor ID
-      parameters:
-      - in: path
-        name: doctorId
-        description: Doctor ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Lista de workshifts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workshift'
-        '500':
-          description: Error del servidor
-      security:
-      - cookieAuth: []
   /api/v1/patients/:
     get:
       tags:
@@ -2908,6 +2908,111 @@ components:
           description: The timestamp when the log was created.
           type: string
           format: date-time
+    Workshift:
+      type: object
+      properties:
+        id:
+          example: 850154d5-6617-4128-b76b-88979b1cbc44
+          type: string
+        doctorId:
+          example: 850154d5-6617-4128-b76b-88979b1cbc46
+          type: string
+        clinicId:
+          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
+          type: string
+        startDate:
+          example: 2024-11-01T09:00:00Z
+          type: string
+          format: date-time
+        duration:
+          example: 120
+          type: integer
+    WorkshiftInput:
+      type: object
+      properties:
+        doctorId:
+          example: 850154d5-6617-4128-b76b-88979b1cbc46
+          type: string
+        clinicId:
+          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
+          type: string
+        startDate:
+          example: 2024-11-01T09:00:00Z
+          type: string
+          format: date-time
+        duration:
+          example: 30
+          type: integer
+    Clinic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    ClinicRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        clinicId:
+          type: string
+        status:
+          type: string
+        planId:
+          type: string
+    PaymentRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+        clinicId:
+          type: string
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
     ClinicalHistory:
       type: object
       properties:
@@ -3001,76 +3106,6 @@ components:
           description: Date the file was uploaded
           type: string
           format: date-time
-    Clinic:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        city:
-          type: string
-        district:
-          type: string
-        plan:
-          type: string
-        active:
-          type: boolean
-        postalCode:
-          type: string
-        countryCode:
-          type: string
-    ClinicRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        city:
-          type: string
-        district:
-          type: string
-        plan:
-          type: string
-        active:
-          type: boolean
-        postalCode:
-          type: string
-        countryCode:
-          type: string
-    Payment:
-      type: object
-      properties:
-        id:
-          type: string
-        date:
-          type: string
-          format: date-time
-        clinicId:
-          type: string
-        status:
-          type: string
-        planId:
-          type: string
-    PaymentRequest:
-      type: object
-      properties:
-        planId:
-          type: string
-        clinicId:
-          type: string
-    Plan:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        price:
-          type: number
-        features:
-          type: array
-          items:
-            type: string
     User:
       description: Schema for the User model, including fields for unique ID, email, password, role, and optional associations with patient and clinic.
       type: object
@@ -3126,41 +3161,6 @@ components:
       - email
       - password
       - roles
-    Workshift:
-      type: object
-      properties:
-        id:
-          example: 850154d5-6617-4128-b76b-88979b1cbc44
-          type: string
-        doctorId:
-          example: 850154d5-6617-4128-b76b-88979b1cbc46
-          type: string
-        clinicId:
-          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
-          type: string
-        startDate:
-          example: 2024-11-01T09:00:00Z
-          type: string
-          format: date-time
-        duration:
-          example: 120
-          type: integer
-    WorkshiftInput:
-      type: object
-      properties:
-        doctorId:
-          example: 850154d5-6617-4128-b76b-88979b1cbc46
-          type: string
-        clinicId:
-          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
-          type: string
-        startDate:
-          example: 2024-11-01T09:00:00Z
-          type: string
-          format: date-time
-        duration:
-          example: 30
-          type: integer
     Patient:
       type: object
       properties:
