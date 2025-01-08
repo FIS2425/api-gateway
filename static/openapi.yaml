@@ -6,727 +6,6 @@ info:
 servers:
 - url: /
 paths:
-  /api/v1/users:
-    post:
-      tags:
-      - Users
-      summary: Create User
-      description: Creates a new user with specified roles, email, and associated IDs for doctor or patient.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  example: new_user@example.com
-                  description: Email address of the user.
-                  type: string
-                password:
-                  example: securepassword123
-                  description: User's password.
-                  type: string
-                roles:
-                  example:
-                  - admin
-                  - doctor
-                  description: List of roles assigned to the user.
-                  type: array
-                  items:
-                    type: string
-                doctorid:
-                  nullable: true
-                  example: doctor123
-                  description: Unique ID if the user is a doctor.
-                  type: string
-                patientid:
-                  nullable: true
-                  example: patient456
-                  description: Unique ID if the user is a patient.
-                  type: string
-              required:
-              - email
-              - password
-        required: true
-      responses:
-        '201':
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  email:
-                    example: new_user@example.com
-                    type: string
-                  roles:
-                    example:
-                    - admin
-                    - doctor
-                    type: array
-                    items:
-                      type: string
-                  doctorid:
-                    nullable: true
-                    example: doctor123
-                    type: string
-                  patientid:
-                    nullable: true
-                    example: patient456
-                    type: string
-        '400':
-          description: Bad request - missing fields or user already exists
-          content:
-            application/json:
-              schema:
-                example:
-                  email: Email is required
-                  password: Password is required
-                type: object
-                additionalProperties:
-                  type: string
-        '401':
-          description: Unauthorized - token missing or invalid
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: No token provided
-                    type: string
-        '403':
-          description: Forbidden - insufficient permissions
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Forbidden
-                    type: string
-        '500':
-          $ref: '#/components/responses/ServerError'
-      security:
-      - cookieAuth: []
-  /api/v1/users/{id}:
-    get:
-      tags:
-      - Users
-      summary: Retrieve user information
-      description: Retrieve user details by user ID. Requires the user to be the owner or have specific roles.
-      parameters:
-      - in: path
-        name: id
-        description: ID of the user to retrieve
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: User retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  email:
-                    type: string
-                  username:
-                    type: string
-                  roles:
-                    type: array
-                    items:
-                      type: string
-                  createdAt:
-                    type: string
-                    format: date-time
-                  updatedAt:
-                    type: string
-                    format: date-time
-              example:
-                _id: 617f1f77bcf86cd799439011
-                createdAt: 2023-01-01T12:00:00Z
-                email: user@example.com
-                roles:
-                - user
-                updatedAt: 2023-01-10T12:00:00Z
-                username: johndoe
-        '401':
-          description: Unautenticated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Token not valid
-        '403':
-          description: Unauthorized access
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Forbidden
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: User not found
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Internal server error
-    put:
-      tags:
-      - Users
-      summary: Update user information
-      description: Update user details by user ID. Requires the user to be the owner or have specific roles.
-      parameters:
-      - in: path
-        name: id
-        description: ID of the user to update
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  example: user@example.com
-                  description: Email address of the user.
-                  type: string
-                password:
-                  example: securepassword123
-                  description: User's password.
-                  type: string
-                roles:
-                  example:
-                  - admin
-                  - doctor
-                  description: List of roles assigned to the user.
-                  type: array
-                  items:
-                    type: string
-        required: true
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  email:
-                    type: string
-                  roles:
-                    type: array
-                    items:
-                      type: string
-                  createdAt:
-                    type: string
-                    format: date-time
-                  updatedAt:
-                    type: string
-                    format: date-time
-              example:
-                _id: 617f1f77bcf86cd799439011
-                createdAt: 2023-01-01T12:00:00Z
-                email: user@example.com
-                roles:
-                - doctor
-                updatedAt: 2023-01-10T12:00:00Z
-        '400':
-          description: Bad request - missing fields or user already exists
-          content:
-            application/json:
-              schema:
-                example:
-                  email: Email is required
-                  password: Password is required
-                type: object
-                additionalProperties:
-                  type: string
-        '401':
-          description: Unautenticated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Token not valid
-        '403':
-          description: Unauthorized access
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Forbidden
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: User not found
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Internal server error
-    delete:
-      tags:
-      - Users
-      summary: Deletes user
-      description: Delete user by user ID. Requires the user to have specific roles.
-      parameters:
-      - in: path
-        name: id
-        description: ID of the user to update
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: User deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-              example:
-                _id: 617f1f77bcf86cd799439011
-        '401':
-          description: Unautenticated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Token not valid
-        '403':
-          description: Unauthorized access
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Unauthorized
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: User not found
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Internal server error
-  /api/v1/users/change-password:
-    post:
-      tags:
-      - Users
-      summary: Change user password
-      description: Allows authenticated users to change their password.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                currentPassword:
-                  example: oldPassword123
-                  description: The current password of the user.
-                  type: string
-                newPassword:
-                  example: newPassword456
-                  description: The new password to set.
-                  type: string
-              required:
-              - currentPassword
-              - newPassword
-        required: true
-      responses:
-        '200':
-          description: Password changed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Password changed successfully
-                    type: string
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: ''
-                    type: string
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Unauthorized
-                    type: string
-        '403':
-          description: Unauthorized access
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Forbidden
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: User not found
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Error when authenticating
-                    type: string
-  /api/v1/users/enable-2fa:
-    post:
-      tags:
-      - Users
-      summary: Enable two-factor authentication
-      description: Allows authenticated users to enable two-factor authentication.
-      responses:
-        '200':
-          description: 2FA successfully enabled
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: 2FA enabled successfully
-                    type: string
-                  qrCodeUrl:
-                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
-                    type: string
-                    format: uri
-                  secret:
-                    example: JBSWY3DPEHPK3PXP
-                    type: string
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Bad request
-                    type: string
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Unauthorized
-                    type: string
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Internal server error
-                    type: string
-  /api/v1/users/verify-2fa:
-    post:
-      tags:
-      - Users
-      summary: Verify two-factor authentication
-      description: Allows authenticated users to verify two-factor authentication.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  example: 550e8400-e29b-41d4-a716-446655440000
-                  description: The user's unique ID.
-                  type: string
-                totpToken:
-                  example: '123456'
-                  description: The two-factor authentication token.
-                  type: string
-              required:
-              - userId
-              - totpToken
-        required: true
-      responses:
-        '200':
-          description: 2FA token verified successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Login successful
-                    type: string
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: 2FA not enabled for this user
-                    type: string
-        '403':
-          description: Unauthorized access
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              example:
-                message: Invalid 2FA token
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Internal server error
-                    type: string
-  /api/v1/login:
-    post:
-      tags:
-      - Authentication
-      summary: User Login
-      description: Authenticates a user with their email and password.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  example: admin@email.com
-                  description: The user's unique email.
-                  type: string
-                password:
-                  example: admin123
-                  description: The user's password.
-                  type: string
-              required:
-              - email
-              - password
-        required: true
-      responses:
-        '200':
-          description: Successful login
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Login successful
-                    type: string
-        '401':
-          description: Unauthorized - invalid credentials
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Invalid credentials
-                    type: string
-        '500':
-          $ref: '#/components/responses/ServerError'
-  /api/v1/logout:
-    post:
-      tags:
-      - Authentication
-      summary: User Logout
-      description: Logs out a user by clearing authentication tokens.
-      responses:
-        '200':
-          description: Successful logout
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Logout successful
-                    type: string
-        '401':
-          description: Unauthorized - user is not logged in
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Not logged in
-                    type: string
-        '500':
-          $ref: '#/components/responses/ServerError'
-  /api/v1/token/refresh:
-    get:
-      tags:
-      - Authentication
-      summary: Refreshes the user's token.
-      description: Refreshes the user's auth and refresh tokens and sets new values in cookies.
-      operationId: validateAuthToken
-      responses:
-        '200':
-          description: Tokens refreshed.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Tokens refreshed
-                    type: string
-        '401':
-          description: Unauthorized - Token is missing, expired, or invalid.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Token expired or invalid.
-                    type: string
-  /api/v1/token/validate:
-    get:
-      tags:
-      - Authentication
-      summary: Validates the user's token.
-      description: Checks the validity of the token provided in the user's cookies.
-      operationId: validateAuthToken
-      responses:
-        '200':
-          description: Token is valid.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Token is valid
-                    type: string
-        '401':
-          description: Unauthorized - Token is missing, expired, or invalid.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Token expired or invalid.
-                    type: string
   /api/v1/histories:
     get:
       tags:
@@ -1513,744 +792,6 @@ paths:
                     type: string
       security:
       - jwt: []
-  /api/v1/plans:
-    get:
-      tags:
-      - Plan
-      summary: Retrieve all plans
-      responses:
-        '200':
-          description: A list of plans
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Plan'
-              examples:
-                example1:
-                  value:
-                  - features:
-                    - Feature A
-                    - Feature B
-                    id: '1'
-                    name: Basic Plan
-                    price: 10.0
-  /api/v1/plans/{id}:
-    get:
-      tags:
-      - Plan
-      summary: Retrieve a plan by ID
-      description: Retrieves details of a specific plan by its unique ID.
-      parameters:
-      - in: path
-        name: id
-        description: The unique identifier for the plan
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Plan successfully retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Plan'
-        '400':
-          description: Missing plan ID
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Missing plan ID
-                    type: string
-        '404':
-          description: Plan not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: Plan not found
-                    type: string
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: An unexpected error occurred
-                    type: string
-  /api/v1/payments:
-    get:
-      tags:
-      - Payment
-      summary: Retrieve all payments
-      responses:
-        '200':
-          description: A list of payments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
-      security:
-      - cookieAuth: []
-    post:
-      tags:
-      - Payment
-      summary: Process a new payment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentRequest'
-        required: true
-      responses:
-        '201':
-          description: Payment successfully processed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-      security:
-      - cookieAuth: []
-  /api/v1/payments/{id}:
-    get:
-      tags:
-      - Payment
-      summary: Retrieve a payment by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Details of a specific payment
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Payment'
-        '404':
-          description: Payment not found
-      security:
-      - cookieAuth: []
-  /api/v1/payments/clinic/{clinicId}:
-    get:
-      tags:
-      - Payment
-      summary: Retrieve all payments by clinic ID
-      parameters:
-      - in: path
-        name: clinicId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: A list of payments for the specified clinic
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Payment'
-        '400':
-          description: Clinic ID is required
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-  /api/v1/clinics:
-    get:
-      tags:
-      - Clinic
-      summary: Retrieve all clinics
-      responses:
-        '200':
-          description: A list of clinics
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Clinic'
-    post:
-      tags:
-      - Clinic
-      summary: Register a new clinic
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ClinicRequest'
-        required: true
-      responses:
-        '201':
-          description: Clinic successfully registered
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-      security:
-      - cookieAuth: []
-  /api/v1/clinics/{id}:
-    get:
-      tags:
-      - Clinic
-      summary: Retrieve a clinic by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Details of a specific clinic
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-        '404':
-          description: Clinic not found
-    put:
-      tags:
-      - Clinic
-      summary: Update a clinic by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ClinicRequest'
-        required: true
-      responses:
-        '200':
-          description: Clinic successfully updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Clinic'
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - Clinic
-      summary: Delete a clinic by ID
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Clinic successfully deleted
-      security:
-      - cookieAuth: []
-  /api/v1/staff/register:
-    post:
-      tags:
-      - staff
-      summary: Register a new doctor
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                surname:
-                  type: string
-                specialty:
-                  type: string
-                dni:
-                  type: string
-                clinicId:
-                  type: string
-                password:
-                  type: string
-                email:
-                  type: string
-        required: true
-      responses:
-        '201':
-          description: Doctor created successfully
-        '400':
-          description: Bad request
-      security:
-      - cookieAuth: []
-  /api/v1/staff/{doctorId}:
-    get:
-      tags:
-      - staff
-      summary: Get doctor by ID
-      parameters:
-      - in: path
-        name: doctorId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Doctor retrieved successfully
-        '404':
-          description: Doctor not found
-    put:
-      tags:
-      - staff
-      summary: Update doctor speciality
-      parameters:
-      - in: path
-        name: doctorId
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                specialty:
-                  type: string
-        required: true
-      responses:
-        '200':
-          description: Speciality updated successfully
-        '404':
-          description: Doctor not found
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - staff
-      summary: Delete a doctor
-      parameters:
-      - in: path
-        name: doctorId
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Doctor deleted successfully
-        '404':
-          description: Doctor not found
-      security:
-      - cookieAuth: []
-  /api/v1/staff/clinic/{clinicId}/speciality/{speciality}:
-    get:
-      tags:
-      - staff
-      summary: Get doctors by speciality in a clinic
-      parameters:
-      - in: path
-        name: clinicId
-        required: true
-        schema:
-          type: string
-        style: simple
-      - in: path
-        name: speciality
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: List of doctors
-        '404':
-          description: No doctors found
-  /api/v1/staff/me:
-    get:
-      tags:
-      - staff
-      summary: Get authenticated doctor
-      responses:
-        '200':
-          description: Authenticated doctor retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  name:
-                    type: string
-                  surname:
-                    type: string
-                  specialty:
-                    type: string
-                  dni:
-                    type: string
-                  clinicId:
-                    type: string
-                  email:
-                    type: string
-                  userId:
-                    type: string
-        '404':
-          description: Authenticated doctor not found
-        '400':
-          description: Error retrieving authenticated doctor
-      security:
-      - cookieAuth: []
-  /api/v1/logs:
-    get:
-      tags:
-      - Logs
-      summary: Fetch list of log entries
-      description: Retrieves a list of logs stored in the S3 bucket, ordered by timestamp in descending order. Requires admin authentication.
-      responses:
-        '200':
-          description: A list of logs
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  logs:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        requestId:
-                          description: Unique identifier for the request log.
-                          type: string
-                        timestamp:
-                          description: The timestamp when the log was created.
-                          type: string
-                          format: date-time
-        '401':
-          description: Unauthorized - No token provided
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message indicating access was denied due to missing token.
-                    type: string
-        '403':
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message indicating insufficient permissions.
-                    type: string
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message describing the issue.
-                    type: string
-      security:
-      - cookieAuth: []
-  /api/v1/logs/{requestId}:
-    get:
-      tags:
-      - Logs
-      summary: Fetch logs for a specific request
-      description: Retrieves the logs for a specific request ID stored in the S3 bucket. Requires admin authentication.
-      parameters:
-      - in: path
-        name: requestId
-        description: The unique identifier of the request log to retrieve.
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Logs for the specified request ID
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  requestId:
-                    description: The unique identifier of the request.
-                    type: string
-                  logs:
-                    type: object
-                    additionalProperties:
-                      description: Log details for the request.
-                      type: string
-        '401':
-          description: Unauthorized - No token provided
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message indicating access was denied due to missing token.
-                    type: string
-        '403':
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message indicating insufficient permissions.
-                    type: string
-        '404':
-          description: Logs not found for the specified request ID
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message indicating the logs were not found.
-                    type: string
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Error message describing the issue.
-                    type: string
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts:
-    get:
-      tags:
-      - Workshifts
-      summary: Get all workshifts
-      responses:
-        '200':
-          description: Retrieve a list of workshifts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workshift'
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-    post:
-      tags:
-      - Workshifts
-      summary: Create a new workshift
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkshiftInput'
-        required: true
-      responses:
-        '201':
-          description: Workshift created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workshift'
-        '400':
-          description: Validation error
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts/week:
-    post:
-      tags:
-      - Workshifts
-      summary: Create a new workshift for a week
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                doctorId:
-                  description: Unique identifier for the doctor
-                  type: string
-                clinicId:
-                  description: Unique identifier for the clinic
-                  type: string
-                duration:
-                  example: 480
-                  description: Duration of each work shift in minutes
-                  type: integer
-                periodStartDate:
-                  description: Start date of the week, must be a Monday
-                  type: string
-                  format: date-time
-                periodEndDate:
-                  description: End date of the week, must be a Sunday within the same week as weekStartDate
-                  type: string
-                  format: date
-              required:
-              - doctorId
-              - clinicId
-              - duration
-              - weekStartDate
-              - weekEndDate
-        required: true
-      responses:
-        '201':
-          description: Workshifts created successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workshift'
-        '400':
-          description: Invalid input or validation error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    example: weekStartDate must be a Monday and weekEndDate a Sunday of the same week
-                    description: Error message explaining the issue
-                    type: string
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts/{id}:
-    get:
-      tags:
-      - Workshifts
-      summary: Get a workshift by ID
-      parameters:
-      - in: path
-        name: id
-        description: Workshift ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Retrieve a workshift
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workshift'
-        '404':
-          description: Workshift not found
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-    put:
-      tags:
-      - Workshifts
-      summary: Update a workshift by ID
-      parameters:
-      - in: path
-        name: id
-        description: Workshift ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkshiftInput'
-        required: true
-      responses:
-        '200':
-          description: Workshift updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workshift'
-        '404':
-          description: Workshift not found
-        '400':
-          description: Validation error
-      security:
-      - cookieAuth: []
-    delete:
-      tags:
-      - Workshifts
-      summary: Delete a workshift by ID
-      parameters:
-      - in: path
-        name: id
-        description: Workshift ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '204':
-          description: Workshift deleted
-        '404':
-          description: Workshift not found
-        '500':
-          description: Server error
-      security:
-      - cookieAuth: []
-  /api/v1/workshifts/doctor/{doctorId}:
-    get:
-      tags:
-      - Workshifts
-      summary: Get workshifts by doctor ID
-      parameters:
-      - in: path
-        name: doctorId
-        description: Doctor ID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        '200':
-          description: Lista de workshifts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workshift'
-        '500':
-          description: Error del servidor
-      security:
-      - cookieAuth: []
   /api/v1/patients/:
     get:
       tags:
@@ -2411,6 +952,136 @@ paths:
             application/json:
               example:
                 message: An unexpected error occurred
+      security:
+      - cookieAuth: []
+  /api/v1/logs:
+    get:
+      tags:
+      - Logs
+      summary: Fetch list of log entries
+      description: Retrieves a list of logs stored in the S3 bucket, ordered by timestamp in descending order. Requires admin authentication.
+      responses:
+        '200':
+          description: A list of logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        requestId:
+                          description: Unique identifier for the request log.
+                          type: string
+                        timestamp:
+                          description: The timestamp when the log was created.
+                          type: string
+                          format: date-time
+        '401':
+          description: Unauthorized - No token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message indicating access was denied due to missing token.
+                    type: string
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message indicating insufficient permissions.
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message describing the issue.
+                    type: string
+      security:
+      - cookieAuth: []
+  /api/v1/logs/{requestId}:
+    get:
+      tags:
+      - Logs
+      summary: Fetch logs for a specific request
+      description: Retrieves the logs for a specific request ID stored in the S3 bucket. Requires admin authentication.
+      parameters:
+      - in: path
+        name: requestId
+        description: The unique identifier of the request log to retrieve.
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Logs for the specified request ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId:
+                    description: The unique identifier of the request.
+                    type: string
+                  logs:
+                    type: object
+                    additionalProperties:
+                      description: Log details for the request.
+                      type: string
+        '401':
+          description: Unauthorized - No token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message indicating access was denied due to missing token.
+                    type: string
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message indicating insufficient permissions.
+                    type: string
+        '404':
+          description: Logs not found for the specified request ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message indicating the logs were not found.
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Error message describing the issue.
+                    type: string
       security:
       - cookieAuth: []
   /api/v1/appointments:
@@ -2794,63 +1465,1337 @@ paths:
           description: Error retrieving appointments for the clinic
       security:
       - cookieAuth: []
+  /api/v1/staff/register:
+    post:
+      tags:
+      - staff
+      summary: Register a new doctor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                surname:
+                  type: string
+                specialty:
+                  type: string
+                dni:
+                  type: string
+                clinicId:
+                  type: string
+                password:
+                  type: string
+                email:
+                  type: string
+        required: true
+      responses:
+        '201':
+          description: Doctor created successfully
+        '400':
+          description: Bad request
+      security:
+      - cookieAuth: []
+  /api/v1/staff/{doctorId}:
+    get:
+      tags:
+      - staff
+      summary: Get doctor by ID
+      parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Doctor retrieved successfully
+        '404':
+          description: Doctor not found
+    put:
+      tags:
+      - staff
+      summary: Update doctor speciality
+      parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                specialty:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: Speciality updated successfully
+        '404':
+          description: Doctor not found
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - staff
+      summary: Delete a doctor
+      parameters:
+      - in: path
+        name: doctorId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Doctor deleted successfully
+        '404':
+          description: Doctor not found
+      security:
+      - cookieAuth: []
+  /api/v1/staff/clinic/{clinicId}/speciality/{speciality}:
+    get:
+      tags:
+      - staff
+      summary: Get doctors by speciality in a clinic
+      parameters:
+      - in: path
+        name: clinicId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: path
+        name: speciality
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: List of doctors
+        '404':
+          description: No doctors found
+  /api/v1/staff/me:
+    get:
+      tags:
+      - staff
+      summary: Get authenticated doctor
+      responses:
+        '200':
+          description: Authenticated doctor retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  name:
+                    type: string
+                  surname:
+                    type: string
+                  specialty:
+                    type: string
+                  dni:
+                    type: string
+                  clinicId:
+                    type: string
+                  email:
+                    type: string
+                  userId:
+                    type: string
+        '404':
+          description: Authenticated doctor not found
+        '400':
+          description: Error retrieving authenticated doctor
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts:
+    get:
+      tags:
+      - Workshifts
+      summary: Get all workshifts
+      responses:
+        '200':
+          description: Retrieve a list of workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Workshifts
+      summary: Create a new workshift
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+        required: true
+      responses:
+        '201':
+          description: Workshift created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Validation error
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts/week:
+    post:
+      tags:
+      - Workshifts
+      summary: Create a new workshift for a week
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctorId:
+                  description: Unique identifier for the doctor
+                  type: string
+                clinicId:
+                  description: Unique identifier for the clinic
+                  type: string
+                duration:
+                  example: 480
+                  description: Duration of each work shift in minutes
+                  type: integer
+                periodStartDate:
+                  description: Start date of the week, must be a Monday
+                  type: string
+                  format: date-time
+                periodEndDate:
+                  description: End date of the week, must be a Sunday within the same week as weekStartDate
+                  type: string
+                  format: date
+              required:
+              - doctorId
+              - clinicId
+              - duration
+              - weekStartDate
+              - weekEndDate
+        required: true
+      responses:
+        '201':
+          description: Workshifts created successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '400':
+          description: Invalid input or validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: weekStartDate must be a Monday and weekEndDate a Sunday of the same week
+                    description: Error message explaining the issue
+                    type: string
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts/{id}:
+    get:
+      tags:
+      - Workshifts
+      summary: Get a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Retrieve a workshift
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+    put:
+      tags:
+      - Workshifts
+      summary: Update a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkshiftInput'
+        required: true
+      responses:
+        '200':
+          description: Workshift updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workshift'
+        '404':
+          description: Workshift not found
+        '400':
+          description: Validation error
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Workshifts
+      summary: Delete a workshift by ID
+      parameters:
+      - in: path
+        name: id
+        description: Workshift ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Workshift deleted
+        '404':
+          description: Workshift not found
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+  /api/v1/workshifts/doctor/{doctorId}:
+    get:
+      tags:
+      - Workshifts
+      summary: Get workshifts by doctor ID
+      parameters:
+      - in: path
+        name: doctorId
+        description: Doctor ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Lista de workshifts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workshift'
+        '500':
+          description: Error del servidor
+      security:
+      - cookieAuth: []
+  /api/v1/users:
+    post:
+      tags:
+      - Users
+      summary: Create User
+      description: Creates a new user with specified roles, email, and associated IDs for doctor or patient.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  example: new_user@example.com
+                  description: Email address of the user.
+                  type: string
+                password:
+                  example: securepassword123
+                  description: User's password.
+                  type: string
+                roles:
+                  example:
+                  - admin
+                  - doctor
+                  description: List of roles assigned to the user.
+                  type: array
+                  items:
+                    type: string
+                doctorid:
+                  nullable: true
+                  example: doctor123
+                  description: Unique ID if the user is a doctor.
+                  type: string
+                patientid:
+                  nullable: true
+                  example: patient456
+                  description: Unique ID if the user is a patient.
+                  type: string
+              required:
+              - email
+              - password
+        required: true
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    example: new_user@example.com
+                    type: string
+                  roles:
+                    example:
+                    - admin
+                    - doctor
+                    type: array
+                    items:
+                      type: string
+                  doctorid:
+                    nullable: true
+                    example: doctor123
+                    type: string
+                  patientid:
+                    nullable: true
+                    example: patient456
+                    type: string
+        '400':
+          description: Bad request - missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                example:
+                  email: Email is required
+                  password: Password is required
+                type: object
+                additionalProperties:
+                  type: string
+        '401':
+          description: Unauthorized - token missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: No token provided
+                    type: string
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Forbidden
+                    type: string
+        '500':
+          $ref: '#/components/responses/ServerError'
+      security:
+      - cookieAuth: []
+  /api/v1/users/{id}:
+    get:
+      tags:
+      - Users
+      summary: Retrieve user information
+      description: Retrieve user details by user ID. Requires the user to be the owner or have specific roles.
+      parameters:
+      - in: path
+        name: id
+        description: ID of the user to retrieve
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  email:
+                    type: string
+                  username:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                _id: 617f1f77bcf86cd799439011
+                createdAt: 2023-01-01T12:00:00Z
+                email: user@example.com
+                roles:
+                - user
+                updatedAt: 2023-01-10T12:00:00Z
+                username: johndoe
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Token not valid
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Forbidden
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+    put:
+      tags:
+      - Users
+      summary: Update user information
+      description: Update user details by user ID. Requires the user to be the owner or have specific roles.
+      parameters:
+      - in: path
+        name: id
+        description: ID of the user to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  example: user@example.com
+                  description: Email address of the user.
+                  type: string
+                password:
+                  example: securepassword123
+                  description: User's password.
+                  type: string
+                roles:
+                  example:
+                  - admin
+                  - doctor
+                  description: List of roles assigned to the user.
+                  type: array
+                  items:
+                    type: string
+        required: true
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+              example:
+                _id: 617f1f77bcf86cd799439011
+                createdAt: 2023-01-01T12:00:00Z
+                email: user@example.com
+                roles:
+                - doctor
+                updatedAt: 2023-01-10T12:00:00Z
+        '400':
+          description: Bad request - missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                example:
+                  email: Email is required
+                  password: Password is required
+                type: object
+                additionalProperties:
+                  type: string
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Token not valid
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Forbidden
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+    delete:
+      tags:
+      - Users
+      summary: Deletes user
+      description: Delete user by user ID. Requires the user to have specific roles.
+      parameters:
+      - in: path
+        name: id
+        description: ID of the user to update
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+              example:
+                _id: 617f1f77bcf86cd799439011
+        '401':
+          description: Unautenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Token not valid
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Unauthorized
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Internal server error
+  /api/v1/users/change-password:
+    post:
+      tags:
+      - Users
+      summary: Change user password
+      description: Allows authenticated users to change their password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword:
+                  example: oldPassword123
+                  description: The current password of the user.
+                  type: string
+                newPassword:
+                  example: newPassword456
+                  description: The new password to set.
+                  type: string
+              required:
+              - currentPassword
+              - newPassword
+        required: true
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Password changed successfully
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: ''
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Unauthorized
+                    type: string
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Forbidden
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Error when authenticating
+                    type: string
+  /api/v1/users/enable-2fa:
+    post:
+      tags:
+      - Users
+      summary: Enable two-factor authentication
+      description: Allows authenticated users to enable two-factor authentication.
+      responses:
+        '200':
+          description: 2FA successfully enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: 2FA enabled successfully
+                    type: string
+                  qrCodeUrl:
+                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+                    type: string
+                    format: uri
+                  secret:
+                    example: JBSWY3DPEHPK3PXP
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Bad request
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Unauthorized
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Internal server error
+                    type: string
+  /api/v1/users/verify-2fa:
+    post:
+      tags:
+      - Users
+      summary: Verify two-factor authentication
+      description: Allows authenticated users to verify two-factor authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                  description: The user's unique ID.
+                  type: string
+                totpToken:
+                  example: '123456'
+                  description: The two-factor authentication token.
+                  type: string
+              required:
+              - userId
+              - totpToken
+        required: true
+      responses:
+        '200':
+          description: 2FA token verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Login successful
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: 2FA not enabled for this user
+                    type: string
+        '403':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Invalid 2FA token
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Internal server error
+                    type: string
+  /api/v1/login:
+    post:
+      tags:
+      - Authentication
+      summary: User Login
+      description: Authenticates a user with their email and password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  example: admin@email.com
+                  description: The user's unique email.
+                  type: string
+                password:
+                  example: admin123
+                  description: The user's password.
+                  type: string
+              required:
+              - email
+              - password
+        required: true
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Login successful
+                    type: string
+        '401':
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Invalid credentials
+                    type: string
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/v1/logout:
+    post:
+      tags:
+      - Authentication
+      summary: User Logout
+      description: Logs out a user by clearing authentication tokens.
+      responses:
+        '200':
+          description: Successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Logout successful
+                    type: string
+        '401':
+          description: Unauthorized - user is not logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Not logged in
+                    type: string
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/v1/token/refresh:
+    get:
+      tags:
+      - Authentication
+      summary: Refreshes the user's token.
+      description: Refreshes the user's auth and refresh tokens and sets new values in cookies.
+      operationId: validateAuthToken
+      responses:
+        '200':
+          description: Tokens refreshed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Tokens refreshed
+                    type: string
+        '401':
+          description: Unauthorized - Token is missing, expired, or invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Token expired or invalid.
+                    type: string
+  /api/v1/token/validate:
+    get:
+      tags:
+      - Authentication
+      summary: Validates the user's token.
+      description: Checks the validity of the token provided in the user's cookies.
+      operationId: validateAuthToken
+      responses:
+        '200':
+          description: Token is valid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Token is valid
+                    type: string
+        '401':
+          description: Unauthorized - Token is missing, expired, or invalid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Token expired or invalid.
+                    type: string
+  /api/v1/plans:
+    get:
+      tags:
+      - Plan
+      summary: Retrieve all plans
+      responses:
+        '200':
+          description: A list of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plan'
+              examples:
+                example1:
+                  value:
+                  - features:
+                    - Feature A
+                    - Feature B
+                    id: '1'
+                    name: Basic Plan
+                    price: 10.0
+  /api/v1/plans/{id}:
+    get:
+      tags:
+      - Plan
+      summary: Retrieve a plan by ID
+      description: Retrieves details of a specific plan by its unique ID.
+      parameters:
+      - in: path
+        name: id
+        description: The unique identifier for the plan
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Plan successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '400':
+          description: Missing plan ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Missing plan ID
+                    type: string
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: Plan not found
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    example: An unexpected error occurred
+                    type: string
+  /api/v1/payments:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve all payments
+      responses:
+        '200':
+          description: A list of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+      security:
+      - cookieAuth: []
+    post:
+      tags:
+      - Payment
+      summary: Process a new payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+        required: true
+      responses:
+        '201':
+          description: Payment successfully processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+      security:
+      - cookieAuth: []
+  /api/v1/payments/{id}:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve a payment by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Details of a specific payment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Payment not found
+      security:
+      - cookieAuth: []
+  /api/v1/payments/clinic/{clinicId}:
+    get:
+      tags:
+      - Payment
+      summary: Retrieve all payments by clinic ID
+      parameters:
+      - in: path
+        name: clinicId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: A list of payments for the specified clinic
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+        '400':
+          description: Clinic ID is required
+        '500':
+          description: Server error
+      security:
+      - cookieAuth: []
+  /api/v1/clinics:
+    get:
+      tags:
+      - Clinic
+      summary: Retrieve all clinics
+      responses:
+        '200':
+          description: A list of clinics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Clinic'
+    post:
+      tags:
+      - Clinic
+      summary: Register a new clinic
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+        required: true
+      responses:
+        '201':
+          description: Clinic successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+      security:
+      - cookieAuth: []
+  /api/v1/clinics/{id}:
+    get:
+      tags:
+      - Clinic
+      summary: Retrieve a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '200':
+          description: Details of a specific clinic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+        '404':
+          description: Clinic not found
+    put:
+      tags:
+      - Clinic
+      summary: Update a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicRequest'
+        required: true
+      responses:
+        '200':
+          description: Clinic successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clinic'
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Clinic
+      summary: Delete a clinic by ID
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        '204':
+          description: Clinic successfully deleted
+      security:
+      - cookieAuth: []
 components:
   schemas:
-    User:
-      description: Schema for the User model, including fields for unique ID, email, password, role, and optional associations with patient and clinic.
-      type: object
-      properties:
-        _id:
-          example: 550e8400-e29b-41d4-a716-446655440000
-          description: Unique identifier for the user. Defaults to a generated UUID.
-          type: string
-          format: uuid
-        email:
-          example: john_doe@email.com
-          description: Unique email for the user.
-          type: string
-        password:
-          description: Hashed password of the user.
-          type: string
-        roles:
-          example:
-          - doctor
-          - clinicadmin
-          description: List of roles assigned to the user.
-          default:
-          - patient
-          type: array
-          items:
-            type: string
-            enum:
-            - admin
-            - clinicadmin
-            - doctor
-            - patient
-        doctorid:
-          nullable: true
-          example: doctor12345
-          description: Identifier of the doctor if the user is a clinic doctor.
-          type: string
-        patientid:
-          nullable: true
-          example: patient12345
-          description: Identifier of the patient if the user is associated with a patient record.
-          type: string
-        createdAt:
-          example: 2023-10-25T08:40:51.620Z
-          description: Timestamp when the user was created.
-          type: string
-          format: date-time
-        updatedAt:
-          example: 2023-10-26T08:40:51.620Z
-          description: Timestamp when the user was last updated.
-          type: string
-          format: date-time
-      required:
-      - email
-      - password
-      - roles
     ClinicalHistory:
       type: object
       properties:
@@ -2944,121 +2889,6 @@ components:
           description: Date the file was uploaded
           type: string
           format: date-time
-    Clinic:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        city:
-          type: string
-        district:
-          type: string
-        plan:
-          type: string
-        active:
-          type: boolean
-        postalCode:
-          type: string
-        countryCode:
-          type: string
-    ClinicRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        city:
-          type: string
-        district:
-          type: string
-        plan:
-          type: string
-        active:
-          type: boolean
-        postalCode:
-          type: string
-        countryCode:
-          type: string
-    Payment:
-      type: object
-      properties:
-        id:
-          type: string
-        date:
-          type: string
-          format: date-time
-        clinicId:
-          type: string
-        status:
-          type: string
-        planId:
-          type: string
-    PaymentRequest:
-      type: object
-      properties:
-        planId:
-          type: string
-        clinicId:
-          type: string
-    Plan:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        price:
-          type: number
-        features:
-          type: array
-          items:
-            type: string
-    LogEntry:
-      type: object
-      properties:
-        requestId:
-          description: Unique identifier for the request log.
-          type: string
-        timestamp:
-          description: The timestamp when the log was created.
-          type: string
-          format: date-time
-    Workshift:
-      type: object
-      properties:
-        id:
-          example: 850154d5-6617-4128-b76b-88979b1cbc44
-          type: string
-        doctorId:
-          example: 850154d5-6617-4128-b76b-88979b1cbc46
-          type: string
-        clinicId:
-          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
-          type: string
-        startDate:
-          example: 2024-11-01T09:00:00Z
-          type: string
-          format: date-time
-        duration:
-          example: 120
-          type: integer
-    WorkshiftInput:
-      type: object
-      properties:
-        doctorId:
-          example: 850154d5-6617-4128-b76b-88979b1cbc46
-          type: string
-        clinicId:
-          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
-          type: string
-        startDate:
-          example: 2024-11-01T09:00:00Z
-          type: string
-          format: date-time
-        duration:
-          example: 30
-          type: integer
     Patient:
       type: object
       properties:
@@ -3090,6 +2920,16 @@ components:
       properties:
         message:
           type: string
+    LogEntry:
+      type: object
+      properties:
+        requestId:
+          description: Unique identifier for the request log.
+          type: string
+        timestamp:
+          description: The timestamp when the log was created.
+          type: string
+          format: date-time
     Appointment:
       type: object
       properties:
@@ -3230,12 +3070,172 @@ components:
           - completed
           - cancelled
           - no_show
+    Workshift:
+      type: object
+      properties:
+        id:
+          example: 850154d5-6617-4128-b76b-88979b1cbc44
+          type: string
+        doctorId:
+          example: 850154d5-6617-4128-b76b-88979b1cbc46
+          type: string
+        clinicId:
+          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
+          type: string
+        startDate:
+          example: 2024-11-01T09:00:00Z
+          type: string
+          format: date-time
+        duration:
+          example: 120
+          type: integer
+    WorkshiftInput:
+      type: object
+      properties:
+        doctorId:
+          example: 850154d5-6617-4128-b76b-88979b1cbc46
+          type: string
+        clinicId:
+          example: ea12fd3d-4d3c-4ba2-b871-673c29fb69d3
+          type: string
+        startDate:
+          example: 2024-11-01T09:00:00Z
+          type: string
+          format: date-time
+        duration:
+          example: 30
+          type: integer
+    User:
+      description: Schema for the User model, including fields for unique ID, email, password, role, and optional associations with patient and clinic.
+      type: object
+      properties:
+        _id:
+          example: 550e8400-e29b-41d4-a716-446655440000
+          description: Unique identifier for the user. Defaults to a generated UUID.
+          type: string
+          format: uuid
+        email:
+          example: john_doe@email.com
+          description: Unique email for the user.
+          type: string
+        password:
+          description: Hashed password of the user.
+          type: string
+        roles:
+          example:
+          - doctor
+          - clinicadmin
+          description: List of roles assigned to the user.
+          default:
+          - patient
+          type: array
+          items:
+            type: string
+            enum:
+            - admin
+            - clinicadmin
+            - doctor
+            - patient
+        doctorid:
+          nullable: true
+          example: doctor12345
+          description: Identifier of the doctor if the user is a clinic doctor.
+          type: string
+        patientid:
+          nullable: true
+          example: patient12345
+          description: Identifier of the patient if the user is associated with a patient record.
+          type: string
+        createdAt:
+          example: 2023-10-25T08:40:51.620Z
+          description: Timestamp when the user was created.
+          type: string
+          format: date-time
+        updatedAt:
+          example: 2023-10-26T08:40:51.620Z
+          description: Timestamp when the user was last updated.
+          type: string
+          format: date-time
+      required:
+      - email
+      - password
+      - roles
+    Clinic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    ClinicRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        plan:
+          type: string
+        active:
+          type: boolean
+        postalCode:
+          type: string
+        countryCode:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date-time
+        clinicId:
+          type: string
+        status:
+          type: string
+        planId:
+          type: string
+    PaymentRequest:
+      type: object
+      properties:
+        planId:
+          type: string
+        clinicId:
+          type: string
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
   securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: token
     jwt:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
